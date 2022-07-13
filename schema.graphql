@@ -39,10 +39,5 @@ type VestingData @jsonField {
 
 type VestingSchedule @entity {
   id: ID!
-  block: Int @index
-  txHash: String @index
-  signer: String @index
-  to: String @index
-  data: VestingData
-  success: Boolean
+  data: [VestingData]
 }

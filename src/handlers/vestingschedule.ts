@@ -30,19 +30,26 @@ export class VestingScheduleHandler {
   }
 
   public async save () {
-    let vesting = new VestingSchedule(this.block + "-" + this.idx)
+    let vesting = await VestingSchedule.get(this.signer)
 
-    // const data = await api.query.vesting.vestingSchedules("4iYNmZi1KZj8CBybb4YBkzZJyiQJtrHpWuLDSpW97H5nBCmu")
+    const data = await api.query.vesting.vestingSchedules(this.signer)
 
-    // logger.info(`data: ${data}`)
+    let vestingData = []
 
-    vesting.block = Number(this.block)
-    vesting.txHash = this.hash
-    vesting.signer = this.signer
-    vesting.to = this.args[0].toString()
-    vesting.data = this.args[1] as VestingData
-    vesting.success = checkIfExtrinsicExecuteSuccess(this.extrinsic)
-    
+    for(let i = 0; i < data.encodedLength; i++) {
+      if(data[i] === undefined) {
+        break
+      }
+      vestingData.push(data[i])
+    }
+
+    if(vesting === undefined) {
+      vesting = new VestingSchedule(this.signer)
+      vesting.data = vestingData
+    } else {
+      vesting.data = vestingData
+    }
+
     await vesting.save()
   }
 }
