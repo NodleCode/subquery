@@ -31,6 +31,11 @@ export class VestingScheduleHandler {
 
   public async save () {
     let vesting = new VestingSchedule(this.block + "-" + this.idx)
+
+    // const data = await api.query.vesting.vestingSchedules("4iYNmZi1KZj8CBybb4YBkzZJyiQJtrHpWuLDSpW97H5nBCmu")
+
+    // logger.info(`data: ${data}`)
+
     vesting.block = Number(this.block)
     vesting.txHash = this.hash
     vesting.signer = this.signer
