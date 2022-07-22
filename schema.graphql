@@ -41,3 +41,11 @@ type VestingSchedule @entity {
   id: ID!
   data: [VestingData]
 }
+
+type Allocations @entity {
+  id: ID!
+  account: String @index
+  value: String
+  fee: String
+  proof: String
+}

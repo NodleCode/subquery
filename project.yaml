@@ -35,3 +35,8 @@ dataSources:
           filter:
             module: vesting
             method: addVestingSchedule
+        - handler: handleAllocation
+          kind: substrate/EventHandler
+          filter:
+            module: allocations
+            event: newallocation
