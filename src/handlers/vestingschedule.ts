@@ -1,12 +1,16 @@
 import { SubstrateEvent } from '@subql/types'
 import { checkIfExtrinsicExecuteSuccess } from '../helpers'
-import { VestingData, VestingSchedule } from '../types'
+import { VestingData, VestingScheduleAdded } from '../types'
 
 export class VestingScheduleHandler {
   private event: SubstrateEvent 
 
   constructor(event: SubstrateEvent) {
     this.event = event
+  }
+
+  get signer () {
+    return this.event.extrinsic.extrinsic.signer.toString()
   }
 
   get data () {
@@ -26,14 +30,25 @@ export class VestingScheduleHandler {
   }
 
   public async save () {
-    let vesting = new VestingSchedule(this.block + "-" + this.idx)
-    const [from, to, vesting_schedule] = this.data
-    vesting.block = this.block
-    vesting.txHash = this.hash
-    vesting.signer = from.toString()
-    vesting.to = to.toString()
-    vesting.data = vesting_schedule as VestingData
-    vesting.success = checkIfExtrinsicExecuteSuccess(this.event.extrinsic)
+    let vesting = await VestingScheduleAdded.get(this.signer)
+
+    const data = await api.query.vesting.vestingSchedules(this.signer)
+
+    let vestingData = []
+
+    for(let i = 0; i < data.encodedLength; i++) {
+      if(data[i] === undefined) {
+        break
+      }
+      vestingData.push(data[i])
+    }
+
+    if(vesting === undefined) {
+      vesting = new VestingScheduleAdded(this.signer)
+      vesting.data = vestingData
+    } else {
+      vesting.data = vestingData
+    }
     
     await vesting.save()
   }
