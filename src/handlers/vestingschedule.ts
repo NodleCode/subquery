@@ -1,32 +1,28 @@
-import { SubstrateExtrinsic } from '@subql/types'
+import { SubstrateEvent } from '@subql/types'
 import { checkIfExtrinsicExecuteSuccess } from '../helpers'
 import { VestingData, VestingSchedule } from '../types'
 
 export class VestingScheduleHandler {
-  private extrinsic: SubstrateExtrinsic 
+  private event: SubstrateEvent 
 
-  constructor(extrinsic: SubstrateExtrinsic) {
-    this.extrinsic = extrinsic
+  constructor(event: SubstrateEvent) {
+    this.event = event
   }
 
-  get args () {
-    return this.extrinsic.extrinsic.args
+  get data () {
+    return this.event.event.data
   }
 
   get hash () {
-    return this.extrinsic.extrinsic.hash.toString()
-  }
-
-  get signer () {
-    return this.extrinsic.extrinsic.signer.toString()
+    return this.event.extrinsic.extrinsic.hash.toString()
   }
 
   get block () {
-    return this.extrinsic.block.block.header.number.toString()
+    return this.event.block.block.header.number.toNumber()
   }
 
   get idx () {
-    return this.extrinsic.idx
+    return this.event.idx
   }
 
   public async save () {
@@ -49,7 +45,6 @@ export class VestingScheduleHandler {
     } else {
       vesting.data = vestingData
     }
-
     await vesting.save()
   }
 }
