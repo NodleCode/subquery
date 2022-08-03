@@ -30,6 +30,11 @@ dataSources:
           filter:
             module: balances
             method: Transfer
+        - handler: systemTokenTransferCall
+          kind: substrate/CallHandler
+          filter:
+            moudle: balances
+            method: transfer
         - handler: handleVestingSchedule
           kind: substrate/EventHandler
           filter:

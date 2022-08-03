@@ -16,6 +16,7 @@ type Extrinsic @entity {
   module: String! @index
   call: String! @index
   blockHeight: BigInt! @index
+  args: String
   success: Boolean!
   isSigned: Boolean!
 }

@@ -1,4 +1,4 @@
-import { SubstrateEvent } from "@subql/types";
+import { SubstrateEvent, SubstrateExtrinsic } from "@subql/types";
 import { AccountId, Balance, BlockNumber } from '@polkadot/types/interfaces/runtime';
 import type { Compact } from '@polkadot/types';
 import { SystemTokenTransfer } from "../types/models/SystemTokenTransfer";
@@ -22,4 +22,18 @@ export async function systemTokenTransferEvent(event: SubstrateEvent): Promise<v
     record.success = checkIfExtrinsicExecuteSuccess(event.extrinsic)
 
     await record.save();
+}
+
+export async function systemTokenTransferCall(extrinsic: SubstrateExtrinsic): Promise<void> {
+    const blockNumber = (extrinsic.block.block.header.number as Compact<BlockNumber>).toNumber();
+    let record = new SystemTokenTransfer(blockNumber.toString() + '-' + extrinsic.idx.toString());
+    record.from = extrinsic?.extrinsic?.signer?.toString();
+    record.to = extrinsic.extrinsic.args[0].toString();
+    record.txHash = extrinsic.extrinsic.hash.toString();
+    record.amount = (extrinsic.extrinsic.args[1] as Balance).toBigInt();
+    record.timestamp = extrinsic.block.timestamp;
+    record.success = checkIfExtrinsicExecuteSuccess(extrinsic);
+
+    await record.save();
+
 }
