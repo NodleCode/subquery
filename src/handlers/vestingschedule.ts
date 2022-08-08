@@ -1,37 +1,54 @@
-import { SubstrateEvent } from '@subql/types'
-import { VestingData, VestingScheduleAdded } from '../types'
+import { SubstrateExtrinsic } from '@subql/types'
+import { VestingScheduleAdded } from '../types'
+import { VestingData } from '../types'
 
 export class VestingScheduleHandler {
-  private event: SubstrateEvent 
+  private extrinsic: SubstrateExtrinsic 
 
-  constructor(event: SubstrateEvent) {
-    this.event = event
+  constructor(extrinsic: SubstrateExtrinsic) {
+    this.extrinsic = extrinsic
   }
 
-  get data () {
-    return this.event.event.data
+  // get data () {
+  //   return this.event.event.data
+  // }
+
+  get signer() {
+    return this.extrinsic.extrinsic.signer.toString()
   }
 
   get hash () {
-    return this.event.extrinsic.extrinsic.hash.toString()
+    return this.extrinsic.extrinsic.hash.toString()
   }
 
   get block () {
-    return this.event.block.block.header.number.toNumber()
+    return this.extrinsic.block.block.header.number.toNumber()
   }
 
   get idx () {
-    return this.event.idx
+    return this.extrinsic.idx
   }
 
   public async save () {
-    let vesting = new VestingScheduleAdded(this.block + "-" + this.idx)
-    const [from, to, vesting_schedule] = this.data
-    vesting.block = this.block
-    vesting.txHash = this.hash
-    vesting.signer = from.toString()
-    vesting.to = to.toString()
-    vesting.data = vesting_schedule as VestingData
+    let vesting = await VestingScheduleAdded.get(this.signer)
+
+    const data = await api.query.vesting.vestingSchedules(this.signer)
+
+    let vestingData = []
+
+    for(let i = 0; i < data.encodedLength; i++) {
+      if(data[i] === undefined) {
+        break
+      }
+      vestingData.push(data[i])
+    }
+
+    if(vesting === undefined) {
+      vesting = new VestingScheduleAdded(this.signer)
+      vesting.data = vestingData
+    } else {
+      vesting.data = vestingData
+    }
     
     await vesting.save()
   }

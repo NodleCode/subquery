@@ -36,10 +36,7 @@ dataSources:
             moudle: balances
             method: transfer
         - handler: handleVestingSchedule
-          kind: substrate/EventHandler
-          filter:
-            module: vesting
-            event: VestingScheduleAdded
+          kind: substrate/CallHandler
         - handler: handleVestingScheduleFailed
           kind: substrate/CallHandler
           filter:
