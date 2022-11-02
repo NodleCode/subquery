@@ -13,7 +13,7 @@ repository: https://github.com/NodleCode/subquery.git
 schema:
   file: ./schema.graphql
 network:
-  chainId: NETWORK_CHAIN_ID
+  chainId: 'NETWORK_CHAIN_ID'
   endpoint: NETWORK_ENDPOINT
 chaintypes:
     file: ./dist/chaintypes.js

@@ -1,5 +1,5 @@
 #!/bin/bash
-filename="./app/project.yaml"
+filename="/app/project.yaml"
 
 # Check if file exists
 if [ -f "$filename" ]
