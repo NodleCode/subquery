@@ -29,3 +29,5 @@ for i in $(seq 1 $(echo "$ENVS" | wc -w)); do
         echo "Value for $env is empty"
     fi
 done
+
+./usr/local/lib/node_modules/@subql/node/bin/run

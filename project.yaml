@@ -13,8 +13,8 @@ repository: https://github.com/NodleCode/subquery.git
 schema:
   file: ./schema.graphql
 network:
-  chainId: 'NETWORK_CHAIN_ID'
-  endpoint: NETWORK_ENDPOINT
+  chainId: '0x0fd167da222f10dae826a0433fe4daadcf4a36c2a6bd5c1b085857d5b79030af'
+  endpoint: wss://nodle-paradis.api.onfinality.io/public-ws
 chaintypes:
     file: ./dist/chaintypes.js
 dataSources:
