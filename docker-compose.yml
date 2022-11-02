@@ -18,7 +18,7 @@ services:
       retries: 5
 
   subquery-node:
-    build: .
+    image: onfinality/subql-node:latest
     depends_on:
       "postgres":
         condition: service_healthy
@@ -29,8 +29,6 @@ services:
       DB_DATABASE: postgres
       DB_HOST: postgres
       DB_PORT: 5432
-      NETWORK_CHAIN_ID: '0x0fd167da222f10dae826a0433fe4daadcf4a36c2a6bd5c1b085857d5b79030af'
-      NETWORK_ENDPOINT: wss://nodle-paradis.api.onfinality.io/public-ws
     volumes:
       - ./:/app
     command:

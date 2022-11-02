@@ -30,4 +30,5 @@ for i in $(seq 1 $(echo "$ENVS" | wc -w)); do
     fi
 done
 
-./usr/local/lib/node_modules/@subql/node/bin/run
+echo "Start indexing"
+./usr/local/lib/node_modules/@subql/node/bin/run -f=/app --db-schema=app --log-level=info --disable-historical=false

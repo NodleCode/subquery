@@ -10,6 +10,4 @@ RUN cd app\
 
 RUN chmod +x ./app/scripts/update_project_file.sh
 
-CMD ["-f=/app", "--db-schema=app", "--log-level=error", "--disable-historical=false"]
-
-## ENTRYPOINT ["./sbin/tini" "--" "./app/scripts/update_project_file.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "./app/scripts/update_project_file.sh"]
