@@ -22,7 +22,7 @@ export async function handleBalanceTransferEvent(event: SubstrateEvent) {
     record.timestamp = new Date(event.extrinsic.block.timestamp).getTime();
     record.success = checkIfExtrinsicExecuteSuccess(event.extrinsic)
 
-    return Promise.all([record.save(), updateAccountBalances([from.toString(), to.toString()])]);
+    return record.save();
 }
 
 export async function handleBalanceDepositEvent(event: SubstrateEvent) {
