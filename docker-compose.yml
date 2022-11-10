@@ -18,7 +18,7 @@ services:
       retries: 5
 
   subquery-node:
-    image: onfinality/subql-node:latest
+    build: .
     depends_on:
       "postgres":
         condition: service_healthy
@@ -31,11 +31,6 @@ services:
       DB_PORT: 5432
     volumes:
       - ./:/app
-    command:
-      - -f=/app
-      - --db-schema=app
-      - --log-level=debug
-      - --disable-historical=false
     healthcheck:
       test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]
       interval: 3s
