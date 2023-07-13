@@ -1,40 +1,23 @@
 import { Balance } from '@polkadot/types/interfaces/runtime';
+import { SubstrateEvent } from "@subql/types";
+import { checkHistoryData } from "./checkHistoryData";
 import { History } from "../types";
 
 type FilterHistory<T, J> = {
     [K in keyof T]: T[K] extends J ? K : never;
 }[keyof T];
 
-export function baseEventHandler<K extends FilterHistory<History, number>>(
-    dataStore: History,
+export async function baseEventHandler<K extends FilterHistory<History, number>>(
+    event: SubstrateEvent,
     key: K
 ) {
-    const history = dataStore;
+    const date = new Date(event.extrinsic.block.timestamp);
+    const history = await checkHistoryData(date);
     const total = history[key] || 0;
 
     history[key] = total + 1;
 
-    logger.info(`Saved History: ${JSON.stringify(history, (key, value) =>
-            typeof value === 'bigint'
-                ? value.toString()
-                : value // return everything else unchanged
-        )}`);
+    await history.save().catch((e) => {
+        logger.error(`Error saving history: ${e}`);
+    });
 }
-
-export function baseEventHandlerForBN<K extends FilterHistory<History, bigint>>(
-    dataStore: History,
-    balance: Balance,
-    key: K
-) {
-    const history = dataStore;
-    const current = history[key];
-    const amount = balance;
-    history[key] = BigInt(current || 0) + amount.toBigInt();
-
-    logger.info(`Saved History: ${JSON.stringify(history, (key, value) =>
-            typeof value === 'bigint'
-                ? value.toString()
-                : value // return everything else unchanged
-        )}`);
-}
-
