@@ -7,7 +7,7 @@ type History @entity {
   itemsBurned: Int
   collectionsCreated: Int
   collectionsDestroyed: Int
-  amountTranferred: BigInt
+  amountTransferred: BigInt
   newAccounts: Int
   killedAccounts: Int
 }

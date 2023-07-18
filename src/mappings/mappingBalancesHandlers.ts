@@ -9,9 +9,9 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
 
     history.balanceTransfers = total + 1;
 
-    const current = history.amountTranferred || 0;
+    const current = history.amountTransferred || 0;
     const amount = event.event.data[2] as Balance;
-    history.amountTranferred = BigInt(current || 0) + amount.toBigInt();
+    history.amountTransferred = BigInt(current || 0) + amount.toBigInt();
 
     await history.save().catch((e) => {
         logger.error(`Error saving history: ${e}`);
