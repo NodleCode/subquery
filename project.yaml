@@ -27,47 +27,47 @@ dataSources:
         - handler: handleUniquesTransferEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: Transferred
         - handler: handleUniquesBurnedEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: Burned
         - handler: handleUniquesDestroyedEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: Destroyed
         - handler: handleUniquesIssuedEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: Issued
         - handler: handleUniquesCreatedEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: Created
         - handler: handleUniquesMetadataSetEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: MetadataSet
         - handler: handleUniquesCollectionMetadataSetEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: CollectionMetadataSet
         - handler: handleUniquesOwnershipAcceptanceChangedEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: OwnershipAcceptanceChanged
         - handler: handleUniquesTeamChangedEvent
           kind: substrate/EventHandler
           filter:
-            module: uniques
+            module: substrateUniques
             method: TeamChanged
         - handler: handleBalancesTransferEvent
           kind: substrate/EventHandler
