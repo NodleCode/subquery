@@ -3,6 +3,10 @@ import { SubstrateEvent } from "@subql/types";
 import { checkHistoryData } from "../helpers/checkHistoryData";
 
 export async function handleBalancesTransferEvent(event: SubstrateEvent) {
+    if (!event.block?.timestamp) {
+        return;
+    }
+
     const date = new Date(event.block.timestamp);
     const history = await checkHistoryData(date);
     const total = history.balanceTransfers || 0;

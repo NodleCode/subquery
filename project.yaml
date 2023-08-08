@@ -49,6 +49,31 @@ dataSources:
           filter:
             module: uniques
             method: Created
+        - handler: handleUniquesTransferEvent
+          kind: substrate/EventHandler
+          filter:
+            module: substrateUniques
+            method: Transferred
+        - handler: handleUniquesBurnedEvent
+          kind: substrate/EventHandler
+          filter:
+            module: substrateUniques
+            method: Burned
+        - handler: handleUniquesDestroyedEvent
+          kind: substrate/EventHandler
+          filter:
+            module: substrateUniques
+            method: Destroyed
+        - handler: handleUniquesIssuedEvent
+          kind: substrate/EventHandler
+          filter:
+            module: substrateUniques
+            method: Issued
+        - handler: handleUniquesCreatedEvent
+          kind: substrate/EventHandler
+          filter:
+            module: substrateUniques
+            method: Created
         - handler: handleBalancesTransferEvent
           kind: substrate/EventHandler
           filter:

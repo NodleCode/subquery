@@ -11,7 +11,11 @@ export async function baseEventHandler<K extends FilterHistory<History, number>>
     event: SubstrateEvent,
     key: K
 ) {
-    const date = new Date(event.extrinsic.block.timestamp);
+    if (!event.block?.timestamp) {
+        return;
+    }
+
+    const date = new Date(event.block.timestamp);
     const history = await checkHistoryData(date);
     const total = history[key] || 0;
 
