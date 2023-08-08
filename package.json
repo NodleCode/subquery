@@ -7,7 +7,8 @@
     "publish": "subql publish",
     "prepack": "rm -rf dist && npm run build",
     "codegen": "./node_modules/.bin/subql codegen",
-    "start:docker": "docker-compose pull && docker-compose up --remove-orphans"
+    "start:docker": "docker-compose pull && docker-compose up --remove-orphans",
+    "test": "subql build && subql-node test"
   },
   "homepage": "https://github.com/NodleCode/subquery",
   "repository": "github:NodleCode/subquery",
@@ -29,5 +30,8 @@
   },
   "exports": {
     "chaintypes": "./src/chaintypes.ts"
+  },
+  "dependencies": {
+    "@subql/testing": "^2.0.2"
   }
 }
