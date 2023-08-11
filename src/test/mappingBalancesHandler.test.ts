@@ -5,16 +5,11 @@ import allocationJson from "./mock/allocation.json";
 // See https://academy.subquery.network/build/testing.html
 
 subqlTest(
-  "mappingAllocationHandler test",
+  "handleBalancesTransferEvent test",
   3259478,
   [
-   
   ],
   [
-    Allocations.create({
-        ...JSON.parse(JSON.stringify(allocationJson)).data.allocations.nodes[0],
-        __block_range: [3259478, 3259478],
-    })
   ],
-  "handleAllocationBatchCall"
+  "handleBalancesTransferEvent"
 );
