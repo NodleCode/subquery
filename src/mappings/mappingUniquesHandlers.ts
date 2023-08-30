@@ -53,7 +53,7 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
     uniqueTransfer.collectionId = collection.id;
 
     await collection.save();
-    await item.save()
+    await item.save();
   }
 
   return uniqueTransfer.save();
