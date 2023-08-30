@@ -1,29 +1,24 @@
-import { Item } from './../types/models/Item';
-import { Balance } from '@polkadot/types/interfaces/runtime';
-import { ensureCollection, ensureItem } from './../helpers/verifyUnique';
+import { Item } from "./../types/models/Item";
+import { Balance } from "@polkadot/types/interfaces/runtime";
+import { ensureCollection, ensureItem } from "./../helpers/verifyUnique";
 import { SubstrateEvent } from "@subql/types";
 import { UniquesTransfer } from "../types/models";
 
-export async function handleUniquesTransferEvent(
-  event: SubstrateEvent
-) {
+export async function handleUniquesTransferEvent(event: SubstrateEvent) {
   logger.debug("uniqueTransferEvent added: " + JSON.stringify(event.toHuman()));
   const from = event.event.data[2];
   const to = event.event.data[3];
   const collectionId = event.event.data[0];
   const itemId = event.event.data[1];
   const blockNumber = event.block.block.header.number.toNumber();
-  const id = `${blockNumber}-${event.idx}`
+  const id = `${blockNumber}-${event.idx}`;
 
   if (!from || !to || !collectionId || !itemId) {
-    logger.error(
-      "Some arguments is null",
-      JSON.stringify(event.toHuman())
-    );
+    logger.error("Some arguments is null", JSON.stringify(event.toHuman()));
     return;
   }
 
-  const uniqueTransfer = new UniquesTransfer(id, '', '');
+  const uniqueTransfer = new UniquesTransfer(id, "", "");
 
   uniqueTransfer.block = blockNumber;
   uniqueTransfer.from = from.toString();
@@ -37,45 +32,48 @@ export async function handleUniquesTransferEvent(
     });
     uniqueTransfer.txHash = event.extrinsic.extrinsic.hash.toString();
     uniqueTransfer.timestamp = event.extrinsic.block.timestamp.getTime();
+
+    const collection = await ensureCollection({
+      collectionId,
+      blockNumber,
+      idx: event.idx,
+      timestamp: event.extrinsic.block.timestamp,
+    });
+
+    const item = await ensureItem({
+      collectionId,
+      collectionFkey: collection.id,
+      itemId,
+      blockNumber,
+      idx: event.idx,
+      timestamp: event.extrinsic.block.timestamp,
+    });
+    item.owner = to.toString();
+    uniqueTransfer.itemId = item.id;
+    uniqueTransfer.collectionId = collection.id;
+
+    await collection.save();
+    await item.save()
   }
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp,
-  });
-
-  const item = await ensureItem({
-    collectionId,
-    collectionFkey: collection.id,
-    itemId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp,
-  });
-  item.owner = to.toString();
-  uniqueTransfer.itemId = item.id;
-  uniqueTransfer.collectionId = collection.id;
-
-  await collection.save();
-  await item.save()
   return uniqueTransfer.save();
 }
 
-export const handleUniquesMetadataSetEvent = async (
-  event: SubstrateEvent
-) => {
-  logger.debug("uniqueMetadataSetEvent added: " + JSON.stringify(event.toHuman()));
+export const handleUniquesMetadataSetEvent = async (event: SubstrateEvent) => {
+  logger.debug(
+    "uniqueMetadataSetEvent added: " + JSON.stringify(event.toHuman())
+  );
   const collectionId = event.event.data[0];
   const itemId = event.event.data[1];
   const data = event.event.data[2];
   const blockNumber = event.block.block.header.number.toNumber();
 
   //small check
-  let items = await Item.getByCollectionItemKey(`${collectionId.toString()}-${itemId.toString()}`);
+  let items = await Item.getByCollectionItemKey(
+    `${collectionId.toString()}-${itemId.toString()}`
+  );
 
-  if (items.length <= 0) {
+  if (items!.length <= 0) {
     logger.error(
       "Item not found while handling uniqueMetadataSetEvent",
       JSON.stringify(event.toHuman())
@@ -84,15 +82,15 @@ export const handleUniquesMetadataSetEvent = async (
   }
   const item = await ensureItem({
     collectionId,
-    collectionFkey: items[0].collectionId,
+    collectionFkey: items![0].collectionId,
     itemId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp,
+    timestamp: event.extrinsic!.block.timestamp,
   });
-  item.metadataCid = data.toHuman().toString();
+  item.metadataCid = data.toHuman()!.toString();
   return item.save();
-}
+};
 
 export const handleUniquesCollectionMetadataSetEvent = async (
   event: SubstrateEvent
@@ -108,16 +106,14 @@ export const handleUniquesCollectionMetadataSetEvent = async (
     collectionId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp
+    timestamp: event.extrinsic!.block.timestamp,
   });
-  collection.metadataCid = data.toHuman().toString();
+  collection.metadataCid = data.toHuman()!.toString();
 
   return collection.save();
-}
+};
 
-export const handleUniquesDestroyedEvent = async (
-  event: SubstrateEvent
-) => {
+export const handleUniquesDestroyedEvent = async (event: SubstrateEvent) => {
   logger.debug(
     "handleUniquesDestroyedEvent added: " + JSON.stringify(event.toHuman())
   );
@@ -128,15 +124,13 @@ export const handleUniquesDestroyedEvent = async (
     collectionId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp
+    timestamp: event.extrinsic!.block.timestamp,
   });
   collection.isDestroyed = true;
-  return collection.save()
-}
+  return collection.save();
+};
 
-export const handleUniquesBurnedEvent = async (
-  event: SubstrateEvent
-) => {
+export const handleUniquesBurnedEvent = async (event: SubstrateEvent) => {
   logger.debug(
     "handleUniquesBurnedEvent added: " + JSON.stringify(event.toHuman())
   );
@@ -148,7 +142,7 @@ export const handleUniquesBurnedEvent = async (
     collectionId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp,
+    timestamp: event.extrinsic!.block.timestamp,
   });
 
   const item = await ensureItem({
@@ -157,16 +151,14 @@ export const handleUniquesBurnedEvent = async (
     itemId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp
+    timestamp: event.extrinsic!.block.timestamp,
   });
 
   item.isBurned = true;
   return item.save();
-}
+};
 
-export const handleUniquesIssuedEvent = async (
-  event: SubstrateEvent
-) => {
+export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
   logger.debug(
     "handleUniquesIssuedEvent added: " + JSON.stringify(event.toHuman())
   );
@@ -179,7 +171,7 @@ export const handleUniquesIssuedEvent = async (
     collectionId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp
+    timestamp: event.extrinsic!.block.timestamp,
   });
   const item = await ensureItem({
     collectionId,
@@ -187,19 +179,17 @@ export const handleUniquesIssuedEvent = async (
     itemId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp
+    timestamp: event.extrinsic!.block.timestamp,
   });
 
   item.owner = owner.toString();
   item.collectionId = collection.id;
-  
-  await collection.save()
-  return item.save();
-}
 
-export const handleUniquesCreatedEvent = async (
-  event: SubstrateEvent
-) => {
+  await collection.save();
+  return item.save();
+};
+
+export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
   logger.debug(
     "handleUniquesCreatedEvent added: " + JSON.stringify(event.toHuman())
   );
@@ -212,45 +202,44 @@ export const handleUniquesCreatedEvent = async (
     collectionId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp
+    timestamp: event.extrinsic!.block.timestamp,
   });
 
   collection.issuer = creator.toString();
   collection.owner = owner.toString();
   collection.admin = creator.toString();
 
-  return collection.save()
-}
+  return collection.save();
+};
 
 export const handleUniquesOwnershipAcceptanceChangedEvent = async (
   event: SubstrateEvent
 ) => {
   logger.debug(
-    "handleUniquesOwnershipAcceptanceChangedEvent added: " + JSON.stringify(event.toHuman())
+    "handleUniquesOwnershipAcceptanceChangedEvent added: " +
+      JSON.stringify(event.toHuman())
   );
   const who = event.event.data[0];
   const collectionId = event.event.data[1];
   const blockNumber = event.block.block.header.number.toNumber();
 
-  if(!collectionId?.toString()) {
-    return
+  if (!collectionId?.toString()) {
+    return;
   }
 
   const collection = await ensureCollection({
     collectionId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp
+    timestamp: event.extrinsic!.block.timestamp,
   });
 
   collection.owner = who.toString();
-  
-  return collection.save()
-}
 
-export const handleUniquesTeamChangedEvent = async (
-  event: SubstrateEvent
-) => {
+  return collection.save();
+};
+
+export const handleUniquesTeamChangedEvent = async (event: SubstrateEvent) => {
   logger.debug(
     "handleUniquesTeamChangedEvent added: " + JSON.stringify(event.toHuman())
   );
@@ -264,12 +253,12 @@ export const handleUniquesTeamChangedEvent = async (
     collectionId,
     blockNumber,
     idx: event.idx,
-    timestamp: event.extrinsic.block.timestamp
+    timestamp: event.extrinsic!.block.timestamp,
   });
 
   collection.issuer = issuer.toString();
   collection.admin = admin.toString();
   collection.freezer = freezer.toString();
-  
-  return collection.save()
-}
+
+  return collection.save();
+};

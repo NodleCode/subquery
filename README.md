@@ -1,9 +1,11 @@
 # subquery-nodle
 
-## How to use query on Subquery server. 
+## How to use query on Subquery server.
+
 Subquery is a [gaphql](https://graphql.org) based API server. As it's the case with graphql you can either use HTTP to deliver your queries to the server using either of the two GET or POST methods explained [here](https://graphql.org/learn/serving-over-http/), or depending on the language of your client applications you use [a graphql library](https://graphql.org/code) and query the server in a way that's more idiomatic in your own coding language. The direct HTTP requests could be useful for the tests created in Postman or Insomnia, while the latter approach could be preferred inside your applications. Below you see the list of the queries that this project is supporting at the moment:
 
 ### Query transaction history
+
 ```
 query TransactionHistoryByAddress ($address: String!){
 	systemTokenTransfers (filter: {
@@ -12,7 +14,7 @@ query TransactionHistoryByAddress ($address: String!){
 	  fromId: {
 	    equalTo: $address
 	  }
-	},        	
+	},
 	{
 	  toId: {
 	    equalTo: $address
@@ -31,7 +33,9 @@ query TransactionHistoryByAddress ($address: String!){
     }
 }
 ```
+
 ### Query vesting schedules for an address
+
 ```
 query VestingSchedulesByAddress($address: String!){
   vestingSchedules (filter: {
@@ -52,63 +56,45 @@ query VestingSchedulesByAddress($address: String!){
 ### How to get transfer lists by specific address & timestamp
 
 ```graphql
-query transfersByFields($from: String! $to: String!) {
-    systemTokenTransfers(filter: {
-      and: [
-        {
-          fromId: {
-            equalTo: $from
-          }
-        }
-        {
-          toId: {
-            equalTo: $to
-          }
-        }
-      ]
-    }) {
-    	nodes {
-        id
-        fromId
-        toId
-        timestamp
-      }
+query transfersByFields($from: String!, $to: String!) {
+  systemTokenTransfers(
+    filter: {
+      and: [{ fromId: { equalTo: $from } }, { toId: { equalTo: $to } }]
+    }
+  ) {
+    nodes {
+      id
+      fromId
+      toId
+      timestamp
+    }
   }
 }
 ```
 
 ```graphql
-query transfersByFields($from: String! $to: String! $start: Date! $end: Date!) {
-    systemTokenTransfers(filter: {
+query transfersByFields(
+  $from: String!
+  $to: String!
+  $start: Date!
+  $end: Date!
+) {
+  systemTokenTransfers(
+    filter: {
       and: [
-        {
-          fromId: {
-            equalTo: $from
-          }
-        }
-        {
-          toId: {
-            equalTo: $to
-          }
-        }
-        {
-          timestamp: {
-            greaterThanOrEqualTo: $start
-          }
-        }
-        {
-          timestamp: {
-            lessThanOrEqualTo: $end
-          }
-        }
+        { fromId: { equalTo: $from } }
+        { toId: { equalTo: $to } }
+        { timestamp: { greaterThanOrEqualTo: $start } }
+        { timestamp: { lessThanOrEqualTo: $end } }
       ]
-    }) {
-    	nodes {
-        id
-        fromId
-        toId
-        timestamp
-      }
+    }
+  ) {
+    nodes {
+      id
+      fromId
+      toId
+      timestamp
+    }
   }
 }
 ```

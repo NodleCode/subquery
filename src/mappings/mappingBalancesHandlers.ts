@@ -1,5 +1,5 @@
 import { SubstrateEvent } from "@subql/types";
-import { Balance } from '@polkadot/types/interfaces/runtime';
+import { Balance } from "@polkadot/types/interfaces/runtime";
 import { checkIfExtrinsicExecuteSuccess } from "../helpers";
 import { BalanceTransfer } from "../types/models";
 
