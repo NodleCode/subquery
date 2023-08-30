@@ -23,13 +23,9 @@ export const ensureCollection = async ({
         const id = `${collectionIdString}-${blockNumber}-${idx}`;
         logger.warn('Collection not found, creating new collection', collectionIdString);
         collection = new Collection(id, collectionIdString, '', '', '', false);
-        collection.createdAt = new Date(
-            timestamp
-        ).getTime();
+        collection.createdAt = timestamp.getTime();
     }
-    collection.createdAt = new Date(
-        timestamp
-    ).getTime();
+    collection.createdAt = timestamp.getTime();
     return collection;
 }
 
@@ -43,12 +39,8 @@ export const ensureItem = async ({
         const id = `${collectionId}-${itemIdString}-${blockNumber}-${idx}`;
         logger.warn('Item not found, creating new item', itemIdString);
         item = new Item(id, itemIdString, `${collectionId}-${itemIdString}`, collectionFkey, false);
-        item.createdAt = new Date(
-            timestamp
-        ).getTime();
+        item.createdAt = timestamp.getTime();
     }
-    item.updatedAt = new Date(
-        timestamp
-    ).getTime();
+    item.updatedAt = timestamp.getTime();
     return item;
 }

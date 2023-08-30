@@ -19,7 +19,7 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
     record.amount =  (amount as Balance).toBigInt();
     if (event.extrinsic) {
         record.txHash = event.extrinsic.extrinsic.hash.toString();
-        record.timestamp = new Date(event.extrinsic.block.timestamp).getTime();
+        record.timestamp = event.extrinsic.block.timestamp.getTime();
         record.success = checkIfExtrinsicExecuteSuccess(event.extrinsic)
     }
 
