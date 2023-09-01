@@ -31,9 +31,7 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
       }
     });
     uniqueTransfer.txHash = event.extrinsic.extrinsic.hash.toString();
-    uniqueTransfer.timestamp = new Date(
-      event.extrinsic.block.timestamp
-    ).getTime();
+    uniqueTransfer.timestamp = event.extrinsic.block.timestamp.getTime();
 
     const collection = await ensureCollection({
       collectionId,
@@ -50,7 +48,6 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
       idx: event.idx,
       timestamp: event.extrinsic.block.timestamp,
     });
-
     item.owner = to.toString();
     uniqueTransfer.itemId = item.id;
     uniqueTransfer.collectionId = collection.id;
