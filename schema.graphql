@@ -24,37 +24,6 @@ type Item @entity {
   owner: String
 }
 
-type BalanceTransfer @entity {
-  id: ID!
-  from: String! @index
-  to: String! @index
-  txHash: String @index
-  amount: BigInt @index
-  timestamp: Float @index
-  blockNumber: BigInt
-  success: Boolean
-}
-
-type AllocationEventData @jsonField {
-  who: String @index
-  amount: String
-}
-
-type AllocationEvent @jsonField {
-  method: String @index
-  section: String @index
-  index: String
-  data: AllocationEventData
-}
-
-type Allocations @entity {
-  id: ID!
-  txHash: String @index
-  block: Int @index
-  data: [AllocationEvent]
-  success: Boolean
-}
-
 type UniquesTransfer @entity {
   id: ID!
   txHash: String @index
