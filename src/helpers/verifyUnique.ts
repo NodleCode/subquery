@@ -19,16 +19,18 @@ export const ensureCollection = async ({
   idx,
   timestamp,
 }: EnsureCollection) => {
-    const collectionIdString = collectionId.toString();
-    const collections = await Collection.getByCollectionId(collectionIdString);
+    const collectionIdAsNumber = Number(collectionId.toString());
+    const collections = await Collection.getByCollectionId(collectionIdAsNumber);
     let collection = collections?.find((c) => !c.isDestroyed);
+
     if (!collection) {
-        const id = `${collectionIdString}-${blockNumber}-${idx}`;
-        logger.warn('Collection not found, creating new collection', collectionIdString);
-        collection = new Collection(id, collectionIdString, '', '', '', false);
+        const id = `${collectionIdAsNumber}-${blockNumber}-${idx}`;
+        logger.warn('Collection not found, creating new collection', collectionIdAsNumber);
+        collection = new Collection(id, collectionIdAsNumber, '', '', '', false);
         collection.createdAt = timestamp.getTime();
     }
-    collection.createdAt = timestamp.getTime();
+
+    collection.updatedAt = timestamp.getTime();
     return collection;
 }
 
@@ -43,12 +45,14 @@ export const ensureItem = async ({
     const itemIdString = itemId.toString();
     const items = await Item.getByCollectionItemKey(`${collectionId}-${itemIdString}`);
     let item = items?.find((c) => !c.isBurned);
+
     if (!item) {
         const id = `${collectionId}-${itemIdString}-${blockNumber}-${idx}`;
         logger.warn('Item not found, creating new item', itemIdString);
-        item = new Item(id, itemIdString, `${collectionId}-${itemIdString}`, collectionFkey, false);
+        item = new Item(id, Number(itemIdString), `${collectionId}-${itemIdString}`, collectionFkey, false);
         item.createdAt = timestamp.getTime();
     }
+    
     item.updatedAt = timestamp.getTime();
     return item;
 }

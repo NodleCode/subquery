@@ -2,7 +2,7 @@ import { Item } from "./../types/models/Item";
 import { Balance } from "@polkadot/types/interfaces/runtime";
 import { ensureCollection, ensureItem } from "./../helpers/verifyUnique";
 import { SubstrateEvent } from "@subql/types";
-import { UniquesTransfer } from "../types/models";
+import { Collection, UniquesTransfer } from "../types/models";
 
 export async function handleUniquesTransferEvent(event: SubstrateEvent) {
   logger.debug("uniqueTransferEvent added: " + JSON.stringify(event.toHuman()));
@@ -68,27 +68,24 @@ export const handleUniquesMetadataSetEvent = async (event: SubstrateEvent) => {
   const data = event.event.data[2];
   const blockNumber = event.block.block.header.number.toNumber();
 
-  //small check
-  let items = await Item.getByCollectionItemKey(
-    `${collectionId.toString()}-${itemId.toString()}`
-  );
+  const collection = await ensureCollection({
+    collectionId,
+    blockNumber,
+    idx: event.idx,
+    timestamp: event.extrinsic!.block.timestamp,
+  });
 
-  if (items!.length <= 0) {
-    logger.error(
-      "Item not found while handling uniqueMetadataSetEvent",
-      JSON.stringify(event.toHuman())
-    );
-    return;
-  }
   const item = await ensureItem({
     collectionId,
-    collectionFkey: items![0].collectionId,
+    collectionFkey: collection.id,
     itemId,
     blockNumber,
     idx: event.idx,
     timestamp: event.extrinsic!.block.timestamp,
   });
+
   item.metadataCid = data.toHuman()!.toString();
+
   return item.save();
 };
 
@@ -173,15 +170,16 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
     idx: event.idx,
     timestamp: event.extrinsic!.block.timestamp,
   });
-  const item = await ensureItem({
-    collectionId,
-    collectionFkey: collection.id,
-    itemId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
 
+  const itemIdAsNumber = Number(itemId.toString());
+  const timestamp = event.extrinsic!.block.timestamp
+  const id = `${collectionId}-${itemIdAsNumber}-${blockNumber}-${event.idx}`;
+
+  logger.warn('Creating new item', itemIdAsNumber);
+
+  const item = new Item(id, Number(itemIdAsNumber), `${collectionId}-${itemIdAsNumber}`, collection.id, false);
+
+  item.createdAt = timestamp.getTime();
   item.owner = owner.toString();
   item.collectionId = collection.id;
 
@@ -198,13 +196,16 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
   const owner = event.event.data[2];
   const blockNumber = event.block.block.header.number.toNumber();
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
+  const timestamp = event.extrinsic!.block.timestamp;
+  const collectionIdAsNumber = Number(collectionId.toString());
 
+  const id = `${collectionIdAsNumber}-${blockNumber}-${event.idx}`;
+
+  logger.warn('Creating new collection', collectionIdAsNumber);
+
+  const collection = new Collection(id, collectionIdAsNumber, '', '', '', false);
+
+  collection.createdAt = timestamp.getTime();
   collection.issuer = creator.toString();
   collection.owner = owner.toString();
   collection.admin = creator.toString();
