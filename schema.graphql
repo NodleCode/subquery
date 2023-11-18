@@ -33,6 +33,7 @@ type BalanceTransfer @entity @compositeIndexes(fields: [["from", "to", "amount"]
   timestamp: Float @index
   blockNumber: BigInt
   success: Boolean
+  isReward: Boolean @index
 }
 
 type UniquesTransfer @entity @compositeIndexes(fields: [["from", "to", "timestamp"], ["from", "to"]]) {
