@@ -20,7 +20,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@polkadot/api": "^10",
-    "@subql/cli": "^4.2.0",
+    "@subql/cli": "^4.2.1",
     "@subql/node": "latest",
     "@subql/testing": "latest",
     "@subql/types": "latest",
