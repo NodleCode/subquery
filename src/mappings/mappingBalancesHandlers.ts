@@ -1,6 +1,5 @@
 import { SubstrateEvent } from "@subql/types";
 import { Balance } from "@polkadot/types/interfaces/runtime";
-import { checkIfExtrinsicExecuteSuccess } from "../helpers";
 import { BalanceTransfer } from "../types/models";
 
 export async function handleBalancesTransferEvent(event: SubstrateEvent) {
@@ -20,7 +19,7 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
     if (event.extrinsic) {
         record.txHash = event.extrinsic.extrinsic.hash.toString();
         record.timestamp = event.extrinsic.block.timestamp.getTime();
-        record.success = checkIfExtrinsicExecuteSuccess(event.extrinsic)
+        record.success = true; // this event is emitted from a successful extrinsic
     }
 
     return record.save();
