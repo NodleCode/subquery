@@ -1,8 +1,8 @@
 import { SubstrateEvent } from '@subql/types'
 import { Balance } from '@polkadot/types/interfaces/runtime'
-import { BalanceTransfer } from '../types/models'
+import { BalanceTransfer, Rewards, TransferToTreasury } from '../types/models'
 
-const accountsFromRewards = [
+const REWARD_ACCOUNTS = [
     '4jbtsgNhpGAzdEGrKRb7g8Mq4ToNUpBVxeye942tWfG3gcYi',
     '4jByf7kvkZ7hGYwGMYhjFYHoLec3zNZ3EKD86PARZDcfnnkD',
     '1qnJN7FViy3HZaxZK9tGAA71zxHSBeUweirKqCaox4t8GT7',
@@ -10,9 +10,44 @@ const accountsFromRewards = [
     '4j5pigNy7LAX1dSGZQ7Tc2oms9dzZSEtwQJukSgQ9gAsQ9Fx',
 ]
 
+const ALLOCATION_ACCOUNT = '4jbtsgNhpGAzdEGrKRb7g8Mq4ToNUpBVxeye942tWfG3gcYi'
+const TREASURY_ACCOUNT = '4jbtsgNhpGB2vH7xTjpZVzZLy7W4sFyxjvD45x7X1m6BSiGx'
+
+const getEntityByTxType = (event: SubstrateEvent) => {
+    const [from, to, _] = event.event.data
+    const isReward = REWARD_ACCOUNTS.includes(from.toString())
+    const isTreasury = to.toString() === TREASURY_ACCOUNT
+
+    if (isReward) {
+        return new Rewards(
+            `${event.block.block.header.number.toNumber()}-${event.idx}`,
+            '',
+            ''
+        )
+    }
+
+    if (isTreasury) {
+        const entity = new TransferToTreasury(
+            `${event.block.block.header.number.toNumber()}-${event.idx}`,
+            '',
+            ''
+        )
+
+        entity.isAllocation = from.toString() === ALLOCATION_ACCOUNT
+
+        return entity
+    }
+
+    return new BalanceTransfer(
+        `${event.block.block.header.number.toNumber()}-${event.idx}`,
+        '',
+        ''
+    )
+}
+
 export async function handleBalancesTransferEvent(event: SubstrateEvent) {
-    const from = event.event.data[0]
-    const to = event.event.data[1]
+    const [from, to, amount] = event.event.data
+
     if (!from || !to) {
         logger.error(
             'Some of the from or to address is null',
@@ -21,21 +56,15 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
         return
     }
 
-    const amount = event.event.data[2]
-    let record = new BalanceTransfer(
-        `${event.block.block.header.number.toNumber()}-${event.idx}`,
-        '',
-        ''
-    )
+    let record = getEntityByTxType(event)
+
     record.blockNumber = event.block.block.header.number.toBigInt()
     record.from = from.toString()
     record.to = to.toString()
     record.amount = (amount as Balance).toBigInt()
-    record.isReward = accountsFromRewards.includes(from.toString())
     if (event.extrinsic) {
         record.txHash = event.extrinsic.extrinsic.hash.toString()
         record.timestamp = event.extrinsic.block.timestamp.getTime()
-        record.success = true // this event is emitted from a successful extrinsic
     }
 
     return record.save()

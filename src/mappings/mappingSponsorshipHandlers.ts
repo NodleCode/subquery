@@ -1,9 +1,9 @@
 import { SubstrateExtrinsic } from '@subql/types'
 import { Balance } from '@polkadot/types/interfaces/runtime'
-import { Account, Pot, PotBalance } from '../types'
+import { Account, Pot, AccountPotBalance } from '../types'
 
 const createUserObj = (userId: string) => {
-    const user = new Account(userId, userId)
+    const user = new Account(userId)
     user.createdAt = Date.now()
     user.updatedAt = Date.now()
 
@@ -73,7 +73,7 @@ export async function handleSponsorshipRegisterUsersCall(
     const accounts = args.users
 
     return store.bulkCreate(
-        `PotBalance`,
+        `AccountPotBalance`,
         accounts.map((userId) => ({
             id: `${pot.id}-${userId}`,
             potId: pot.id,
@@ -100,7 +100,7 @@ export async function handleSponsorshipRemoveUsersCall(
     const accounts = args.users
 
     return store.bulkRemove(
-        `PotBalance`,
+        `AccountPotBalance`,
         accounts.map((userId) => `${args.pot}-${userId}`)
     )
 }
@@ -173,14 +173,14 @@ export async function handleSponsorshipUpdateUsersLimitsCall(
 
     return Promise.all(
         accounts.map((userId) => {
-            return store.set('PotBalance', `${args.pot}-${userId}`, {
+            return store.set('AccountPotBalance', `${args.pot}-${userId}`, {
                 id: `${args.pot}-${userId}`,
                 accountId: userId,
                 potId: args.pot,
                 feeQuota: args.new_fee_quota,
                 reserveQuota: args.new_reserve_quota,
                 updatedAt: Date.now(),
-            } as PotBalance)
+            } as AccountPotBalance)
         })
     )
 }
@@ -195,12 +195,12 @@ export async function handleSponsorshipRemovePotCall(
         pot: extrinsic.extrinsic.args[0].toString(),
     }
 
-    // remove PotBalance with potId = args.pot
+    // remove AccountPotBalance with potId = args.pot
 
     await store.bulkRemove(
-        `PotBalance`,
+        `AccountPotBalance`,
         (
-            await store.getByField(`PotBalance`, 'potId', args.pot)
+            await store.getByField(`AccountPotBalance`, 'potId', args.pot)
         ).map((item) => item.id)
     )
 
@@ -221,7 +221,7 @@ export async function handleSponsorshipSponsorForCall(
     if (!pot) return
 
     const caller = extrinsic.extrinsic.signer.toString()
-    const potBalance = await PotBalance.get(`${args.pot}-${caller}`)
+    const potBalance = await AccountPotBalance.get(`${args.pot}-${caller}`)
 
     const [apiUser, apiPot] = await Promise.all([
         api.query.sponsorship.user(args.pot, caller),

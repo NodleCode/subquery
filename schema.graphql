@@ -1,82 +1,98 @@
 type Collection @entity {
-  id: ID!
-  collectionId: Float! @index
-  issuer: String! @index
-  admin: String! @index
-  owner: String! @index
-  freezer: String
-  metadataCid: String
-  isDestroyed: Boolean!
-  createdAt: Float @index
-  updatedAt: Float @index
-  items: [Item] @derivedFrom(field: "collection")
+    id: ID!
+    collectionId: Int! @index
+    issuer: String! @index
+    admin: String! @index
+    owner: String! @index
+    freezer: String
+    metadataCid: String
+    isDestroyed: Boolean!
+    createdAt: Int @index
+    updatedAt: Int @index
+    items: [Item] @derivedFrom(field: "collection")
 }
 
 type Item @entity @compositeIndexes(fields: [["owner", "itemId"]]) {
-  id: ID!
-  itemId: Float! @index
-  collectionItemKey: String! @index
-  collection: Collection!
-  metadataCid: String
-  isBurned: Boolean!
-  createdAt: Float @index
-  updatedAt: Float @index
-  owner: String
+    id: ID!
+    itemId: Int! @index
+    collectionItemKey: String! @index
+    collection: Collection!
+    metadataCid: String
+    isBurned: Boolean!
+    createdAt: Int @index
+    updatedAt: Int @index
+    owner: String
 }
 
-type BalanceTransfer @entity @compositeIndexes(fields: [["from", "to", "amount"], ["from", "to", "timestamp"], ["from", "to"]]) {
-  id: ID!
-  from: String! @index
-  to: String! @index
-  txHash: String @index
-  amount: BigInt @index
-  timestamp: Float @index
-  blockNumber: BigInt
-  success: Boolean
-  isReward: Boolean @index
+type BalanceTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
+    id: ID!
+    from: String! @index
+    to: String! @index
+    txHash: String @index
+    amount: BigInt @index
+    timestamp: Int @index
+    blockNumber: BigInt
 }
 
-type UniquesTransfer @entity @compositeIndexes(fields: [["from", "to", "timestamp"], ["from", "to"]]) {
-  id: ID!
-  txHash: String @index
-  block: Int @index
-  from: String @index
-  to: String @index
-  collection: Collection!
-  item: Item!
-  fee: BigInt
-  timestamp: Float @index
-  success: Boolean
+type Rewards @entity @compositeIndexes(fields: [["from", "to"]]) {
+    id: ID!
+    from: String! @index
+    to: String! @index
+    txHash: String @index
+    amount: BigInt @index
+    timestamp: Int @index
+    blockNumber: BigInt
+}
+
+type TransferToTreasury @entity @compositeIndexes(fields: [["from", "to"]]) {
+    id: ID!
+    from: String! @index
+    to: String! @index
+    txHash: String @index
+    amount: BigInt @index
+    timestamp: Int @index
+    blockNumber: BigInt
+    isAllocation: Boolean @index
+}
+
+type UniquesTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
+    id: ID!
+    txHash: String @index
+    block: Int @index
+    from: String @index
+    to: String @index
+    collection: Collection!
+    item: Item!
+    fee: BigInt
+    timestamp: Int @index
+    success: Boolean
 }
 
 type Pot @entity {
-  id: ID!
-  potId: Float! @index 
-  owner: String! @index
-  feeQuota: BigInt!
-  reserveQuota: BigInt!
-  sponsorshipType: String!
-  sponsoredAccounts: [PotBalance] @derivedFrom(field: "pot")
-  createdAt: Float @index
-  updatedAt: Float @index
-
+    id: ID!
+    potId: Int! @index
+    owner: String! @index
+    feeQuota: BigInt!
+    reserveQuota: BigInt!
+    sponsorshipType: String!
+    sponsoredAccounts: [AccountPotBalance] @derivedFrom(field: "pot")
+    createdAt: Int @index
+    updatedAt: Int @index
 }
 
-type PotBalance @entity @compositeIndexes(fields: [["pot", "account"]]) {
-  id: ID!
-  pot: Pot!
-  account: Account!
-  feeQuota: BigInt!
-  reserveQuota: BigInt!
-  createdAt: Float @index
-  updatedAt: Float @index
+type AccountPotBalance @entity @compositeIndexes(fields: [["pot", "account"]]) {
+    id: ID!
+    pot: Pot!
+    account: Account!
+    feeQuota: BigInt!
+    reserveQuota: BigInt!
+    createdAt: Int @index
+    updatedAt: Int @index
 }
 
 type Account @entity {
-  id: ID!
-  address: String! @index
-  potBalance: [PotBalance] @derivedFrom(field: "account")
-  createdAt: Float @index
-  updatedAt: Float @index
+    id: ID!
+    potBalance: [AccountPotBalance] @derivedFrom(field: "account")
+    createdAt: Int @index
+    updatedAt: Int @index
 }
-
