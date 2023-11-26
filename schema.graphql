@@ -72,8 +72,10 @@ type Pot @entity {
     id: ID!
     potId: Int! @index
     owner: String! @index
-    feeQuota: BigInt!
-    reserveQuota: BigInt!
+    feeQuotaBalance: BigInt!
+    feeQuotaLimit: BigInt!
+    reserveQuotaBalance: BigInt!
+    reserveQuotaLimit: BigInt!
     sponsorshipType: String!
     sponsoredAccounts: [AccountPotBalance] @derivedFrom(field: "pot")
     createdAt: Int @index
@@ -84,8 +86,10 @@ type AccountPotBalance @entity @compositeIndexes(fields: [["pot", "account"]]) {
     id: ID!
     pot: Pot!
     account: Account!
-    feeQuota: BigInt!
-    reserveQuota: BigInt!
+    feeQuotaBalance: BigInt!
+    feeQuotaLimit: BigInt!
+    reserveQuotaBalance: BigInt!
+    reserveQuotaLimit: BigInt!
     createdAt: Int @index
     updatedAt: Int @index
 }

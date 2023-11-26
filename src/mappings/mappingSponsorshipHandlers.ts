@@ -33,8 +33,10 @@ export async function handleSponsorshipCreatePotCall(
         id,
         Number(args.pot),
         owner,
-        args.fee_quota,
-        args.reserve_quota,
+        BigInt(0), // feeQuotaBalance
+        args.fee_quota, // feeQuotaLimit
+        BigInt(0), // reserveQuotaBalance
+        args.reserve_quota, // reserveQuotaLimit
         args.sponsorship_type
     )
 
@@ -78,8 +80,10 @@ export async function handleSponsorshipRegisterUsersCall(
             id: `${pot.id}-${userId}`,
             potId: pot.id,
             accountId: userId,
-            feeQuota: args.common_fee_quota,
-            reserveQuota: args.common_reserve_quota,
+            feeQuotaLimit: args.common_fee_quota,
+            reserveQuotaLimit: args.common_reserve_quota,
+            feeQuotaBalance: BigInt(0),
+            reserveQuotaBalance: BigInt(0),
             createdAt: Date.now(),
             updatedAt: Date.now(),
         }))
@@ -121,8 +125,8 @@ export async function handleSponsorshipUpdatePotLimitsCall(
 
     if (!pot) return
 
-    pot.feeQuota = args.new_fee_quota
-    pot.reserveQuota = args.new_reserve_quota
+    pot.feeQuotaLimit = args.new_fee_quota
+    pot.reserveQuotaLimit = args.new_reserve_quota
     pot.updatedAt = extrinsic.block.timestamp.getTime()
 
     return pot.save()
@@ -177,8 +181,8 @@ export async function handleSponsorshipUpdateUsersLimitsCall(
                 id: `${args.pot}-${userId}`,
                 accountId: userId,
                 potId: args.pot,
-                feeQuota: args.new_fee_quota,
-                reserveQuota: args.new_reserve_quota,
+                feeQuotaLimit: args.new_fee_quota,
+                reserveQuotaLimit: args.new_reserve_quota,
                 updatedAt: Date.now(),
             } as AccountPotBalance)
         })
@@ -233,26 +237,21 @@ export async function handleSponsorshipSponsorForCall(
     const apiPotAsHuman = apiPot.toJSON() as any
 
     if (potBalance && apiUserAsHuman) {
-        const newFeeQuota =
-            BigInt(apiUserAsHuman.feeQuota.limit) -
-            BigInt(apiUserAsHuman.feeQuota.balance)
-        const newReserveQuota =
-            BigInt(apiUserAsHuman.reserveQuota.limit) -
-            BigInt(apiUserAsHuman.reserveQuota.balance)
-        potBalance.feeQuota = newFeeQuota
-        potBalance.reserveQuota = newReserveQuota
+        potBalance.feeQuotaLimit = BigInt(apiUserAsHuman.feeQuota.limit)
+        potBalance.feeQuotaBalance = BigInt(apiUserAsHuman.feeQuota.balance)
+        potBalance.reserveQuotaLimit = BigInt(apiUserAsHuman.reserveQuota.limit)
+        potBalance.reserveQuotaBalance = BigInt(
+            apiUserAsHuman.reserveQuota.balance
+        )
         potBalance.updatedAt = extrinsic.block.timestamp.getTime()
     }
 
     if (apiPotAsHuman) {
-        const newFeeQuota =
-            BigInt(apiPotAsHuman.feeQuota.limit) -
-            BigInt(apiPotAsHuman.feeQuota.balance)
-        const newReserveQuota =
-            BigInt(apiPotAsHuman.reserveQuota.limit) -
-            BigInt(apiPotAsHuman.reserveQuota.balance)
-        pot.feeQuota = newFeeQuota
-        pot.reserveQuota = newReserveQuota
+        pot.feeQuotaLimit = BigInt(apiPotAsHuman.feeQuota.limit)
+        pot.feeQuotaBalance = BigInt(apiPotAsHuman.feeQuota.balance)
+
+        pot.reserveQuotaLimit = BigInt(apiPotAsHuman.reserveQuota.limit)
+        pot.reserveQuotaBalance = BigInt(apiPotAsHuman.reserveQuota.balance)
         pot.updatedAt = extrinsic.block.timestamp.getTime()
     }
 
