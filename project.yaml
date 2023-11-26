@@ -7,6 +7,7 @@ runner:
     version: "*"
     options:
       historical: false
+      skipTransactions: true
   query:
     name: "@subql/query"
     version: "*"
@@ -75,43 +76,3 @@ dataSources:
           filter:
             module: balances
             method: Transfer
-        - handler: handleSponsorshipCreatePotCall
-          kind: substrate/CallHandler
-          filter:
-            module: sponsorship
-            method: createPot
-        - handler: handleSponsorshipRegisterUsersCall
-          kind: substrate/CallHandler
-          filter:
-            module: sponsorship
-            method: registerUsers
-        - handler: handleSponsorshipRemoveUsersCall
-          kind: substrate/CallHandler
-          filter:
-            module: sponsorship
-            method: removeUsers
-        - handler: handleSponsorshipUpdatePotLimitsCall
-          kind: substrate/CallHandler
-          filter:
-            module: sponsorship
-            method: updatePotLimits
-        - handler: handleSponsorshipUpdateSponsorshipTypeCall
-          kind: substrate/CallHandler
-          filter:
-            module: sponsorship
-            method: updateSponsorshipType
-        - handler: handleSponsorshipUpdateUsersLimitsCall
-          kind: substrate/CallHandler
-          filter:
-            module: sponsorship
-            method: updateUsersLimits
-        - handler: handleSponsorshipRemovePotCall
-          kind: substrate/CallHandler
-          filter:
-            module: sponsorship
-            method: removePot
-        - handler: handleSponsorshipSponsorForCall
-          kind: substrate/CallHandler
-          filter:
-            module: sponsorship
-            method: sponsorFor
