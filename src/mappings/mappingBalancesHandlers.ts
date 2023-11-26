@@ -11,12 +11,18 @@ const REWARD_ACCOUNTS = [
 ]
 
 const ALLOCATION_ACCOUNT = '4jbtsgNhpGAzdEGrKRb7g8Mq4ToNUpBVxeye942tWfG3gcYi'
-const TREASURY_ACCOUNT = '4jbtsgNhpGB2vH7xTjpZVzZLy7W4sFyxjvD45x7X1m6BSiGx'
+const TREASURY_ACCOUNT = [
+    '4jbtsgNhpGB2vH7xTjpZVzZLy7W4sFyxjvD45x7X1m6BSiGx',
+    '4jbtsgNhpGB2voF5dZzKQ2tphWLjV48HSkfQwmWqNn3qa4rv',
+    '4jbtsgNhpGB2voKv8rRSJYTAohbnHE5oVZ4DejZBEQVT5o86',
+    '4jbtsgNhpGB2NtbdLN3xkB2urHo5JboKkSAjcBM4s3SzQdUt',
+    '4jbtsgNhpGAzdEGrKRb7g8Mq4ToNUpBVxeye942tWfG3gcYi'
+]
 
 const getEntityByTxType = (event: SubstrateEvent) => {
     const [from, to, _] = event.event.data
     const isReward = REWARD_ACCOUNTS.includes(from.toString())
-    const isTreasury = to.toString() === TREASURY_ACCOUNT
+    const isTreasury = TREASURY_ACCOUNT.includes(to.toString())
 
     if (isReward) {
         return new Rewards(
