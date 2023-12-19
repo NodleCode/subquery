@@ -7,11 +7,10 @@ runner:
     version: "*"
     options:
       historical: false
-      skipTransactions: true
   query:
     name: "@subql/query"
     version: "*"
-description: "Subquery indexer for Nodle network (testnet)."
+description: "Subquery indexer for Nodle network."
 repository: https://github.com/NodleCode/subquery.git
 schema:
   file: ./schema.graphql
@@ -76,3 +75,43 @@ dataSources:
           filter:
             module: balances
             method: Transfer
+        - handler: handleSponsorshipCreatePotCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: createPot
+        - handler: handleSponsorshipRegisterUsersCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: registerUsers
+        - handler: handleSponsorshipRemoveUsersCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: removeUsers
+        - handler: handleSponsorshipUpdatePotLimitsCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: updatePotLimits
+        - handler: handleSponsorshipUpdateSponsorshipTypeCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: updateSponsorshipType
+        - handler: handleSponsorshipUpdateUsersLimitsCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: updateUsersLimits
+        - handler: handleSponsorshipRemovePotCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: removePot
+        - handler: handleSponsorshipSponsorForCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: sponsorFor

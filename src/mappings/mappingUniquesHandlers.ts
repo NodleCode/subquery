@@ -20,7 +20,7 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
 
   const uniqueTransfer = new UniquesTransfer(id, "", "");
 
-  uniqueTransfer.block = blockNumber;
+  uniqueTransfer.block = BigInt(blockNumber)
   uniqueTransfer.from = from.toString();
   uniqueTransfer.to = to.toString();
   if (event.extrinsic) {
@@ -31,7 +31,7 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
       }
     });
     uniqueTransfer.txHash = event.extrinsic.extrinsic.hash.toString();
-    uniqueTransfer.timestamp = event.extrinsic.block.timestamp.getTime();
+    uniqueTransfer.timestamp = BigInt(event.extrinsic.block.timestamp.getTime())
 
     const collection = await ensureCollection({
       collectionId,
@@ -179,7 +179,7 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
 
   const item = new Item(id, Number(itemIdAsNumber), `${collectionId}-${itemIdAsNumber}`, collection.id, false);
 
-  item.createdAt = timestamp.getTime();
+  item.createdAt = BigInt(timestamp.getTime())
   item.owner = owner.toString();
   item.collectionId = collection.id;
 
@@ -205,7 +205,7 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
 
   const collection = new Collection(id, collectionIdAsNumber, '', '', '', false);
 
-  collection.createdAt = timestamp.getTime();
+  collection.createdAt = BigInt(timestamp.getTime())
   collection.issuer = creator.toString();
   collection.owner = owner.toString();
   collection.admin = creator.toString();

@@ -23,13 +23,14 @@ const getEntityByTxType = (event: SubstrateEvent) => {
     const [from, to, _] = event.event.data
     const isReward = REWARD_ACCOUNTS.includes(from.toString())
     const isTreasury = TREASURY_ACCOUNT.includes(to.toString())
+    const result = []
 
     if (isReward) {
-        return new Rewards(
+        result.push(new Rewards(
             `${event.block.block.header.number.toNumber()}-${event.idx}`,
             '',
             ''
-        )
+        ))
     }
 
     if (isTreasury) {
@@ -41,14 +42,18 @@ const getEntityByTxType = (event: SubstrateEvent) => {
 
         entity.isAllocation = from.toString() === ALLOCATION_ACCOUNT
 
-        return entity
+        result.push(entity)
     }
 
-    return new BalanceTransfer(
-        `${event.block.block.header.number.toNumber()}-${event.idx}`,
-        '',
-        ''
-    )
+    if (!isReward && !isTreasury) {
+        result.push(new BalanceTransfer(
+            `${event.block.block.header.number.toNumber()}-${event.idx}`,
+            '',
+            ''
+        ))
+    }
+
+    return result
 }
 
 export async function handleBalancesTransferEvent(event: SubstrateEvent) {
@@ -62,16 +67,18 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
         return
     }
 
-    let record = getEntityByTxType(event)
+    let records = getEntityByTxType(event)
 
-    record.blockNumber = event.block.block.header.number.toBigInt()
-    record.from = from.toString()
-    record.to = to.toString()
-    record.amount = (amount as Balance).toBigInt()
-    if (event.extrinsic) {
-        record.txHash = event.extrinsic.extrinsic.hash.toString()
-        record.timestamp = event.extrinsic.block.timestamp.getTime()
-    }
+    records.forEach(record => {
+        record.blockNumber = event.block.block.header.number.toBigInt()
+        record.from = from.toString()
+        record.to = to.toString()
+        record.amount = (amount as Balance).toBigInt()
+        if (event.extrinsic) {
+            record.txHash = event.extrinsic.extrinsic.hash.toString()
+            record.timestamp = BigInt(event.extrinsic.block.timestamp.getTime())
+        }
+    } )
 
-    return record.save()
+    return Promise.all(records.map(record => record.save()))
 }

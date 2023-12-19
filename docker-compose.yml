@@ -18,7 +18,7 @@ services:
       retries: 5
 
   subquery-node:
-    image: onfinality/subql-node:latest
+    image: onfinality/subql-node:v3.4.2
     depends_on:
       "postgres":
         condition: service_healthy
@@ -34,7 +34,7 @@ services:
     command:
       - -f=/app
       - --db-schema=app
-      - --log-level=error
+      - --log-level=info
       - --disable-historical=true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]

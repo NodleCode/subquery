@@ -1,11 +1,12 @@
 import { SubstrateExtrinsic } from '@subql/types'
 import { Balance } from '@polkadot/types/interfaces/runtime'
 import { Account, Pot, AccountPotBalance } from '../types'
+import { ensureCollection, ensureItem } from '../helpers/verifyUnique'
 
 const createUserObj = (userId: string) => {
     const user = new Account(userId)
-    user.createdAt = Date.now()
-    user.updatedAt = Date.now()
+    user.createdAt = BigInt(Date.now())
+    user.updatedAt = BigInt(Date.now())
 
     return user
 }
@@ -40,8 +41,8 @@ export async function handleSponsorshipCreatePotCall(
         args.sponsorship_type
     )
 
-    pot.createdAt = extrinsic.block.timestamp.getTime()
-    pot.updatedAt = extrinsic.block.timestamp.getTime()
+    pot.createdAt = BigInt(extrinsic.block.timestamp.getTime())
+    pot.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
 
     return pot.save()
 }
@@ -127,7 +128,7 @@ export async function handleSponsorshipUpdatePotLimitsCall(
 
     pot.feeQuotaLimit = args.new_fee_quota
     pot.reserveQuotaLimit = args.new_reserve_quota
-    pot.updatedAt = extrinsic.block.timestamp.getTime()
+    pot.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
 
     return pot.save()
 }
@@ -148,7 +149,7 @@ export async function handleSponsorshipUpdateSponsorshipTypeCall(
     if (!pot) return
 
     pot.sponsorshipType = args.sponsorship_type
-    pot.updatedAt = extrinsic.block.timestamp.getTime()
+    pot.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
 
     return pot.save()
 }
@@ -183,7 +184,7 @@ export async function handleSponsorshipUpdateUsersLimitsCall(
                 potId: args.pot,
                 feeQuotaLimit: args.new_fee_quota,
                 reserveQuotaLimit: args.new_reserve_quota,
-                updatedAt: Date.now(),
+                updatedAt: BigInt(Date.now()),
             } as AccountPotBalance)
         })
     )
@@ -218,7 +219,7 @@ export async function handleSponsorshipSponsorForCall(
 
     const args = {
         pot: extrinsic.extrinsic.args[0].toString(),
-        call: extrinsic.extrinsic.args[1].toHuman(),
+        call: extrinsic.extrinsic.args[1],
     }
     const pot = await Pot.get(args.pot)
 
@@ -226,6 +227,42 @@ export async function handleSponsorshipSponsorForCall(
 
     const caller = extrinsic.extrinsic.signer.toString()
     const potBalance = await AccountPotBalance.get(`${args.pot}-${caller}`)
+
+    const call = args.call as any
+
+    const isUniqueCreate = call.method === 'mint' && call.section === 'uniques'
+    const othersEntities = []
+
+    if (isUniqueCreate) {
+        const [collectionId, itemId, owner] = call.args
+        const idx = extrinsic.idx
+        const blockNumber = extrinsic.block.block.header.number.toNumber()
+        const timestamp = extrinsic.block.timestamp
+
+        const collection = await ensureCollection({
+            collectionId,
+            blockNumber,
+            idx,
+            timestamp,
+        })
+
+        const item = await ensureItem({
+            collectionId,
+            collectionFkey: collection.id,
+            itemId,
+            blockNumber,
+            idx,
+            timestamp,
+        })
+
+        item.owner = owner.toString()
+        item.updatedAt = BigInt(timestamp.getTime())
+        item.podId = Number(pot.id)
+        collection.podId = Number(pot.id)
+        collection.updatedAt = BigInt(timestamp.getTime())
+
+        othersEntities.push(collection.save(), item.save())
+    }
 
     const [apiUser, apiPot] = await Promise.all([
         api.query.sponsorship.user(args.pot, caller),
@@ -243,7 +280,7 @@ export async function handleSponsorshipSponsorForCall(
         potBalance.reserveQuotaBalance = BigInt(
             apiUserAsHuman.reserveQuota.balance
         )
-        potBalance.updatedAt = extrinsic.block.timestamp.getTime()
+        potBalance.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
     }
 
     if (apiPotAsHuman) {
@@ -252,8 +289,8 @@ export async function handleSponsorshipSponsorForCall(
 
         pot.reserveQuotaLimit = BigInt(apiPotAsHuman.reserveQuota.limit)
         pot.reserveQuotaBalance = BigInt(apiPotAsHuman.reserveQuota.balance)
-        pot.updatedAt = extrinsic.block.timestamp.getTime()
+        pot.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
     }
 
-    return Promise.all([pot.save(), potBalance?.save()])
+    return Promise.all([pot.save(), potBalance?.save(), ...othersEntities])
 }
