@@ -4,29 +4,34 @@ import { SubstrateEvent } from "@subql/types";
 export async function handleUniquesTransferEvent(
   event: SubstrateEvent
 ) {
-  await baseEventHandler(event, "uniquesTransfers");
+  const from = event.event.data[0].toString();
+  await baseEventHandler(event, "uniquesTransfers", from);
 }
 
 export const handleUniquesDestroyedEvent = async (
   event: SubstrateEvent
 ) => {
-  await baseEventHandler(event, "collectionsDestroyed");
+  const caller = event.extrinsic?.signer.toString();
+  await baseEventHandler(event, "collectionsDestroyed", caller);
 }
 
 export const handleUniquesBurnedEvent = async (
   event: SubstrateEvent
 ) => {
-  await baseEventHandler(event, "itemsBurned");
+  const caller = event.extrinsic?.signer.toString();
+  await baseEventHandler(event, "itemsBurned", caller);
 }
 
 export const handleUniquesIssuedEvent = async (
   event: SubstrateEvent
 ) => {
-  await baseEventHandler(event, "itemsMinted");
+  const caller = event.event.data[0].toString();
+  await baseEventHandler(event, "itemsMinted", caller);
 }
 
 export const handleUniquesCreatedEvent = async (
   event: SubstrateEvent
 ) => {
-  await baseEventHandler(event, "collectionsCreated");
+  const caller = event.extrinsic?.signer.toString();
+  await baseEventHandler(event, "collectionsCreated", caller);
 }

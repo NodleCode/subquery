@@ -11,3 +11,15 @@ type History @entity {
   newAccounts: Int
   killedAccounts: Int
 }
+
+type Account @entity {
+  id: ID!
+  isAlive: Boolean @index
+  balanceTransfers: Int
+  uniquesTransfers: Int
+  itemsMinted: Int
+  itemsBurned: Int
+  collectionsCreated: Int
+  collectionsDestroyed: Int
+  amountTransferred: BigInt
+}
