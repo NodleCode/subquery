@@ -4,8 +4,8 @@ import { SubstrateEvent } from "@subql/types";
 export async function handleUniquesTransferEvent(
   event: SubstrateEvent
 ) {
-  const from = event.event.data[0].toString();
-  await baseEventHandler(event, "uniquesTransfers", from);
+  const caller = event.extrinsic?.extrinsic.signer.toString();
+  await baseEventHandler(event, "uniquesTransfers", caller);
 }
 
 export const handleUniquesDestroyedEvent = async (
