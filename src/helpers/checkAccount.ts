@@ -6,6 +6,6 @@ export async function checkAccountData(account: string): Promise<Account> {
         return acc;
     }
     const newAcc = new Account(account);
-    newAcc.isAlive = true;
+    newAcc.isAlive = 1;
     return newAcc
 }

@@ -28,7 +28,7 @@ export async function baseEventHandler<K extends FilterHistory<History, number>>
     }
 
     if (key === 'killedAccounts') {
-        account.isAlive = false;
+        account.isAlive = 0;
     }
 
     return Promise.all([

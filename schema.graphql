@@ -14,7 +14,7 @@ type History @entity {
 
 type Account @entity {
   id: ID!
-  isAlive: Boolean @index
+  isAlive: Int @index
   balanceTransfers: Int
   uniquesTransfers: Int
   itemsMinted: Int
