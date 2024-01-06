@@ -2,24 +2,32 @@ type History @entity {
   id: ID!
   date: Date @index
   balanceTransfers: Int
+  userBalanceTransfers: Int
   uniquesTransfers: Int
   itemsMinted: Int
   itemsBurned: Int
   collectionsCreated: Int
   collectionsDestroyed: Int
   amountTransferred: BigInt
+  amountTransferredByUser: BigInt
+  totalIssuance: BigInt
   newAccounts: Int
   killedAccounts: Int
 }
 
-type Account @entity {
+type AccountInfo @entity {
   id: ID!
+  date: Date! @index
+  address: String! @index
   isAlive: Int @index
   balanceTransfers: Int
+  userBalanceTransfers: Int
   uniquesTransfers: Int
   itemsMinted: Int
   itemsBurned: Int
   collectionsCreated: Int
   collectionsDestroyed: Int
   amountTransferred: BigInt
+  amountTransferredByUser: BigInt
+  totalIssuance: BigInt
 }

@@ -1,6 +1,6 @@
 import { SubstrateEvent } from "@subql/types";
 import { checkHistoryData } from "./checkHistoryData";
-import { Account, History } from "../types";
+import { AccountInfo, History } from "../types";
 import { checkAccountData } from './checkAccount';
 
 type FilterHistory<T, J> = {
@@ -18,12 +18,12 @@ export async function baseEventHandler<K extends FilterHistory<History, number>>
 
     const date = new Date(event.block.timestamp);
     const history = await checkHistoryData(date);
-    const account = await checkAccountData(acc);
+    const account = await checkAccountData(acc, date);
     const total = history[key] || 0;
 
     history[key] = total + 1;
     if (key in account) {
-        const key2 = key as FilterHistory<Account, number>;
+        const key2 = key as FilterHistory<AccountInfo, number>;
         account[key2] = (account[key2] || 0) + 1;
     }
 

@@ -7,6 +7,8 @@ export async function checkHistoryData(date: Date): Promise<History> {
         return history;
     }
     const newHistory = new History(moment(date).format('DD/MM/YYYY'));
+    const totalIssuance = await api.query.balances.totalIssuance();
+    newHistory.totalIssuance = (totalIssuance as any).toBigInt();
     newHistory.date = date;
     return newHistory
 }
