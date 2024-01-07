@@ -177,13 +177,25 @@ export async function handleSponsorshipUpdateUsersLimitsCall(
     if (!pot) return
 
     return Promise.all(
-        accounts.map((userId) => {
+        accounts.map(async (userId) => {
+            const userInfo = await api.query.sponsorship
+                .user(args.pot, userId)
+                .catch((e) => {})
+            const apiUserAsHuman = userInfo?.toJSON() as any
+            const feeQuotaBalance = BigInt(
+                apiUserAsHuman?.feeQuota?.balance || 0
+            )
+            const reserveQuotaBalance = BigInt(
+                apiUserAsHuman?.reserveQuota?.balance || 0
+            )
             return store.set('AccountPotBalance', `${args.pot}-${userId}`, {
                 id: `${args.pot}-${userId}`,
                 accountId: userId,
                 potId: args.pot,
                 feeQuotaLimit: args.new_fee_quota,
                 reserveQuotaLimit: args.new_reserve_quota,
+                feeQuotaBalance,
+                reserveQuotaBalance,
                 updatedAt: BigInt(Date.now()),
             } as AccountPotBalance)
         })
