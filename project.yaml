@@ -5,17 +5,18 @@ runner:
   node:
     name: "@subql/node"
     version: "*"
+    options:
+      historical: false
   query:
     name: "@subql/query"
     version: "*"
-description: "Subquery indexer for Nodle network (testnet)."
+description: "Subquery indexer for Nodle network."
 repository: https://github.com/NodleCode/subquery.git
 schema:
   file: ./schema.graphql
 network:
   chainId: "0x97da7ede98d7bad4e36b4d734b6055425a3be036da2a332ea5a7037656427a21"
-  endpoint: [wss://nodle-parachain.api.onfinality.io/public-ws]
-  dictionary: https://api.subquery.network/sq/subquery/nodle-parachain-dictionary
+  endpoint: "wss://eden-rpc.dwellir.com:443/928f1361-a903-4360-b8ca-4fd786d7214c"
 chaintypes:
   file: ./dist/chaintypes.js
 dataSources:
@@ -74,8 +75,43 @@ dataSources:
           filter:
             module: balances
             method: Transfer
-        - handler: handleAllocationBatchCall
+        - handler: handleSponsorshipCreatePotCall
           kind: substrate/CallHandler
           filter:
-            module: allocations
-            method: batch
+            module: sponsorship
+            method: createPot
+        - handler: handleSponsorshipRegisterUsersCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: registerUsers
+        - handler: handleSponsorshipRemoveUsersCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: removeUsers
+        - handler: handleSponsorshipUpdatePotLimitsCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: updatePotLimits
+        - handler: handleSponsorshipUpdateSponsorshipTypeCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: updateSponsorshipType
+        - handler: handleSponsorshipUpdateUsersLimitsCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: updateUsersLimits
+        - handler: handleSponsorshipRemovePotCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: removePot
+        - handler: handleSponsorshipSponsorForCall
+          kind: substrate/CallHandler
+          filter:
+            module: sponsorship
+            method: sponsorFor
