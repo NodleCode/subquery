@@ -242,7 +242,9 @@ export async function handleSponsorshipSponsorForCall(
 
     const call = args.call as any
 
-    const isUniqueCreate = call.method === 'mint' && call.section === 'uniques'
+    const isUniqueCreate =
+        call.method === 'mint' &&
+        (call.section === 'uniques' || call.section === 'nodleUniques')
     const othersEntities = []
 
     if (isUniqueCreate) {

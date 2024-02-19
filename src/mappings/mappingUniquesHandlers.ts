@@ -1,265 +1,314 @@
-import { Item } from "./../types/models/Item";
-import { Balance } from "@polkadot/types/interfaces/runtime";
-import { ensureCollection, ensureItem } from "./../helpers/verifyUnique";
-import { SubstrateEvent } from "@subql/types";
-import { Collection, UniquesTransfer } from "../types/models";
+import { Item } from './../types/models/Item'
+import { Balance } from '@polkadot/types/interfaces/runtime'
+import { ensureCollection, ensureItem } from './../helpers/verifyUnique'
+import { SubstrateEvent } from '@subql/types'
+import fetch from 'node-fetch'
+import { Collection, UniquesTransfer } from '../types/models'
+
+const fetchMetadata = async (cid: string, gateways: string[]): Promise<any> => {
+    if (gateways.length === 0) {
+        return null
+    }
+
+    const gateway = gateways[0]
+    const url = `https://${gateway}/ipfs/${cid}`
+
+    try {
+        const res = await fetch(url)
+        return await res.json()
+    } catch (err) {
+        logger.error(err)
+        return fetchMetadata(cid, gateways.slice(1))
+    }
+}
 
 export async function handleUniquesTransferEvent(event: SubstrateEvent) {
-  logger.debug("uniqueTransferEvent added: " + JSON.stringify(event.toHuman()));
-  const from = event.event.data[2];
-  const to = event.event.data[3];
-  const collectionId = event.event.data[0];
-  const itemId = event.event.data[1];
-  const blockNumber = event.block.block.header.number.toNumber();
-  const id = `${blockNumber}-${event.idx}`;
+    logger.debug(
+        'uniqueTransferEvent added: ' + JSON.stringify(event.toHuman())
+    )
+    const from = event.event.data[2]
+    const to = event.event.data[3]
+    const collectionId = event.event.data[0]
+    const itemId = event.event.data[1]
+    const blockNumber = event.block.block.header.number.toNumber()
+    const id = `${blockNumber}-${event.idx}`
 
-  if (!from || !to || !collectionId || !itemId) {
-    logger.error("Some arguments is null", JSON.stringify(event.toHuman()));
-    return;
-  }
+    if (!from || !to || !collectionId || !itemId) {
+        logger.error('Some arguments is null', JSON.stringify(event.toHuman()))
+        return
+    }
 
-  const uniqueTransfer = new UniquesTransfer(id, "", "");
+    const uniqueTransfer = new UniquesTransfer(id, '', '')
 
-  uniqueTransfer.block = BigInt(blockNumber)
-  uniqueTransfer.from = from.toString();
-  uniqueTransfer.to = to.toString();
-  if (event.extrinsic) {
-    event.extrinsic.events.forEach((eventItem) => {
-      if (eventItem.event.method === "Withdraw") {
-        const fee = eventItem.event.data[1];
-        uniqueTransfer.fee = (fee as Balance).toBigInt();
-      }
-    });
-    uniqueTransfer.txHash = event.extrinsic.extrinsic.hash.toString();
-    uniqueTransfer.timestamp = BigInt(event.extrinsic.block.timestamp.getTime())
+    uniqueTransfer.block = BigInt(blockNumber)
+    uniqueTransfer.from = from.toString()
+    uniqueTransfer.to = to.toString()
+    if (event.extrinsic) {
+        event.extrinsic.events.forEach((eventItem) => {
+            if (eventItem.event.method === 'Withdraw') {
+                const fee = eventItem.event.data[1]
+                uniqueTransfer.fee = (fee as Balance).toBigInt()
+            }
+        })
+        uniqueTransfer.txHash = event.extrinsic.extrinsic.hash.toString()
+        uniqueTransfer.timestamp = BigInt(
+            event.extrinsic.block.timestamp.getTime()
+        )
 
-    const collection = await ensureCollection({
-      collectionId,
-      blockNumber,
-      idx: event.idx,
-      timestamp: event.extrinsic.block.timestamp,
-    });
+        const collection = await ensureCollection({
+            collectionId,
+            blockNumber,
+            idx: event.idx,
+            timestamp: event.extrinsic.block.timestamp,
+        })
 
-    const item = await ensureItem({
-      collectionId,
-      collectionFkey: collection.id,
-      itemId,
-      blockNumber,
-      idx: event.idx,
-      timestamp: event.extrinsic.block.timestamp,
-    });
-    item.owner = to.toString();
-    uniqueTransfer.itemId = item.id;
-    uniqueTransfer.collectionId = collection.id;
+        const item = await ensureItem({
+            collectionId,
+            collectionFkey: collection.id,
+            itemId,
+            blockNumber,
+            idx: event.idx,
+            timestamp: event.extrinsic.block.timestamp,
+        })
+        item.owner = to.toString()
+        uniqueTransfer.itemId = item.id
+        uniqueTransfer.collectionId = collection.id
 
-    await collection.save();
-    await item.save();
-  }
+        await collection.save()
+        await item.save()
+    }
 
-  return uniqueTransfer.save();
+    return uniqueTransfer.save()
 }
 
 export const handleUniquesMetadataSetEvent = async (event: SubstrateEvent) => {
-  logger.debug(
-    "uniqueMetadataSetEvent added: " + JSON.stringify(event.toHuman())
-  );
-  const collectionId = event.event.data[0];
-  const itemId = event.event.data[1];
-  const data = event.event.data[2];
-  const blockNumber = event.block.block.header.number.toNumber();
+    logger.debug(
+        'uniqueMetadataSetEvent added: ' + JSON.stringify(event.toHuman())
+    )
+    const collectionId = event.event.data[0]
+    const itemId = event.event.data[1]
+    const data = event.event.data[2]
+    const blockNumber = event.block.block.header.number.toNumber()
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
+    const collection = await ensureCollection({
+        collectionId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
 
-  const item = await ensureItem({
-    collectionId,
-    collectionFkey: collection.id,
-    itemId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
+    const item = await ensureItem({
+        collectionId,
+        collectionFkey: collection.id,
+        itemId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
 
-  item.metadataCid = data.toHuman()!.toString();
+    item.metadataCid = data.toHuman()!.toString()
 
-  return item.save();
-};
+    if (item.metadataCid) {
+        const metadata = await fetchMetadata(item.metadataCid, [
+          'pinning.infura-ipfs.io',
+          'nodle-web-wallet.infura-ipfs.io',
+          'cloudflare-ipfs.com'
+        ]);
+
+        if (metadata) {
+            item.payloadCid = metadata.content || metadata.image || ''
+        }
+    }
+
+    return item.save()
+}
 
 export const handleUniquesCollectionMetadataSetEvent = async (
-  event: SubstrateEvent
+    event: SubstrateEvent
 ) => {
-  logger.debug(
-    "uniqueCollectionMetadataSetEvent added: " + JSON.stringify(event.toHuman())
-  );
-  const collectionId = event.event.data[0];
-  const data = event.event.data[1];
-  const blockNumber = event.block.block.header.number.toNumber();
+    logger.debug(
+        'uniqueCollectionMetadataSetEvent added: ' +
+            JSON.stringify(event.toHuman())
+    )
+    const collectionId = event.event.data[0]
+    const data = event.event.data[1]
+    const blockNumber = event.block.block.header.number.toNumber()
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
-  collection.metadataCid = data.toHuman()!.toString();
+    const collection = await ensureCollection({
+        collectionId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
+    collection.metadataCid = data.toHuman()!.toString()
 
-  return collection.save();
-};
+    return collection.save()
+}
 
 export const handleUniquesDestroyedEvent = async (event: SubstrateEvent) => {
-  logger.debug(
-    "handleUniquesDestroyedEvent added: " + JSON.stringify(event.toHuman())
-  );
-  const collectionId = event.event.data[0];
-  const blockNumber = event.block.block.header.number.toNumber();
+    logger.debug(
+        'handleUniquesDestroyedEvent added: ' + JSON.stringify(event.toHuman())
+    )
+    const collectionId = event.event.data[0]
+    const blockNumber = event.block.block.header.number.toNumber()
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
-  collection.isDestroyed = true;
-  return collection.save();
-};
+    const collection = await ensureCollection({
+        collectionId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
+    collection.isDestroyed = true
+    return collection.save()
+}
 
 export const handleUniquesBurnedEvent = async (event: SubstrateEvent) => {
-  logger.debug(
-    "handleUniquesBurnedEvent added: " + JSON.stringify(event.toHuman())
-  );
-  const itemId = event.event.data[1];
-  const collectionId = event.event.data[0];
-  const blockNumber = event.block.block.header.number.toNumber();
+    logger.debug(
+        'handleUniquesBurnedEvent added: ' + JSON.stringify(event.toHuman())
+    )
+    const itemId = event.event.data[1]
+    const collectionId = event.event.data[0]
+    const blockNumber = event.block.block.header.number.toNumber()
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
+    const collection = await ensureCollection({
+        collectionId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
 
-  const item = await ensureItem({
-    collectionId,
-    collectionFkey: collection.id,
-    itemId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
+    const item = await ensureItem({
+        collectionId,
+        collectionFkey: collection.id,
+        itemId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
 
-  item.isBurned = true;
-  return item.save();
-};
+    item.isBurned = true
+    return item.save()
+}
 
 export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
-  logger.debug(
-    "handleUniquesIssuedEvent added: " + JSON.stringify(event.toHuman())
-  );
-  const collectionId = event.event.data[0];
-  const itemId = event.event.data[1];
-  const owner = event.event.data[2];
-  const blockNumber = event.block.block.header.number.toNumber();
+    logger.debug(
+        'handleUniquesIssuedEvent added: ' + JSON.stringify(event.toHuman())
+    )
+    const collectionId = event.event.data[0]
+    const itemId = event.event.data[1]
+    const owner = event.event.data[2]
+    const blockNumber = event.block.block.header.number.toNumber()
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
+    const collection = await ensureCollection({
+        collectionId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
 
-  const itemIdAsNumber = Number(itemId.toString());
-  const timestamp = event.extrinsic!.block.timestamp
-  const id = `${collectionId}-${itemIdAsNumber}-${blockNumber}-${event.idx}`;
+    const itemIdAsNumber = Number(itemId.toString())
+    const timestamp = event.extrinsic!.block.timestamp
+    const id = `${collectionId}-${itemIdAsNumber}-${blockNumber}-${event.idx}`
 
-  logger.warn('Creating new item', itemIdAsNumber);
+    logger.warn('Creating new item', itemIdAsNumber)
 
-  const item = new Item(id, Number(itemIdAsNumber), `${collectionId}-${itemIdAsNumber}`, collection.id, false);
+    const item = new Item(
+        id,
+        Number(itemIdAsNumber),
+        `${collectionId}-${itemIdAsNumber}`,
+        collection.id,
+        false
+    )
 
-  item.createdAt = BigInt(timestamp.getTime())
-  item.owner = owner.toString();
-  item.collectionId = collection.id;
+    item.createdAt = BigInt(timestamp.getTime())
+    item.owner = owner.toString()
+    item.collectionId = collection.id
 
-  await collection.save();
-  return item.save();
-};
+    await collection.save()
+    return item.save()
+}
 
 export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
-  logger.debug(
-    "handleUniquesCreatedEvent added: " + JSON.stringify(event.toHuman())
-  );
-  const collectionId = event.event.data[0];
-  const creator = event.event.data[1];
-  const owner = event.event.data[2];
-  const blockNumber = event.block.block.header.number.toNumber();
+    logger.debug(
+        'handleUniquesCreatedEvent added: ' + JSON.stringify(event.toHuman())
+    )
+    const collectionId = event.event.data[0]
+    const creator = event.event.data[1]
+    const owner = event.event.data[2]
+    const blockNumber = event.block.block.header.number.toNumber()
 
-  const timestamp = event.extrinsic!.block.timestamp;
-  const collectionIdAsNumber = Number(collectionId.toString());
+    const timestamp = event.extrinsic!.block.timestamp
+    const collectionIdAsNumber = Number(collectionId.toString())
 
-  const id = `${collectionIdAsNumber}-${blockNumber}-${event.idx}`;
+    const id = `${collectionIdAsNumber}-${blockNumber}-${event.idx}`
 
-  logger.warn('Creating new collection', collectionIdAsNumber);
+    logger.warn('Creating new collection', collectionIdAsNumber)
 
-  const collection = new Collection(id, collectionIdAsNumber, '', '', '', false);
+    const collection = new Collection(
+        id,
+        collectionIdAsNumber,
+        '',
+        '',
+        '',
+        false
+    )
 
-  collection.createdAt = BigInt(timestamp.getTime())
-  collection.issuer = creator.toString();
-  collection.owner = owner.toString();
-  collection.admin = creator.toString();
+    collection.createdAt = BigInt(timestamp.getTime())
+    collection.issuer = creator.toString()
+    collection.owner = owner.toString()
+    collection.admin = creator.toString()
 
-  return collection.save();
-};
+    return collection.save()
+}
 
 export const handleUniquesOwnershipAcceptanceChangedEvent = async (
-  event: SubstrateEvent
+    event: SubstrateEvent
 ) => {
-  logger.debug(
-    "handleUniquesOwnershipAcceptanceChangedEvent added: " +
-      JSON.stringify(event.toHuman())
-  );
-  const who = event.event.data[0];
-  const collectionId = event.event.data[1];
-  const blockNumber = event.block.block.header.number.toNumber();
+    logger.debug(
+        'handleUniquesOwnershipAcceptanceChangedEvent added: ' +
+            JSON.stringify(event.toHuman())
+    )
+    const who = event.event.data[0]
+    const collectionId = event.event.data[1]
+    const blockNumber = event.block.block.header.number.toNumber()
 
-  if (!collectionId?.toString()) {
-    return;
-  }
+    if (!collectionId?.toString()) {
+        return
+    }
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
+    const collection = await ensureCollection({
+        collectionId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
 
-  collection.owner = who.toString();
+    collection.owner = who.toString()
 
-  return collection.save();
-};
+    return collection.save()
+}
 
 export const handleUniquesTeamChangedEvent = async (event: SubstrateEvent) => {
-  logger.debug(
-    "handleUniquesTeamChangedEvent added: " + JSON.stringify(event.toHuman())
-  );
-  const collectionId = event.event.data[0];
-  const issuer = event.event.data[1];
-  const admin = event.event.data[2];
-  const freezer = event.event.data[3];
-  const blockNumber = event.block.block.header.number.toNumber();
+    logger.debug(
+        'handleUniquesTeamChangedEvent added: ' +
+            JSON.stringify(event.toHuman())
+    )
+    const collectionId = event.event.data[0]
+    const issuer = event.event.data[1]
+    const admin = event.event.data[2]
+    const freezer = event.event.data[3]
+    const blockNumber = event.block.block.header.number.toNumber()
 
-  const collection = await ensureCollection({
-    collectionId,
-    blockNumber,
-    idx: event.idx,
-    timestamp: event.extrinsic!.block.timestamp,
-  });
+    const collection = await ensureCollection({
+        collectionId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
 
-  collection.issuer = issuer.toString();
-  collection.admin = admin.toString();
-  collection.freezer = freezer.toString();
+    collection.issuer = issuer.toString()
+    collection.admin = admin.toString()
+    collection.freezer = freezer.toString()
 
-  return collection.save();
-};
+    return collection.save()
+}

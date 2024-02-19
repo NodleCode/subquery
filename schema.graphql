@@ -19,6 +19,7 @@ type Item @entity @compositeIndexes(fields: [["owner", "itemId"]]) {
     collectionItemKey: String! @index
     collection: Collection!
     metadataCid: String
+    payloadCid: String @index
     isBurned: Boolean!
     createdAt: BigInt @index
     updatedAt: BigInt @index

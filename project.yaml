@@ -7,6 +7,7 @@ runner:
     version: "*"
     options:
       historical: false
+      unsafe: true
   query:
     name: "@subql/query"
     version: "*"
@@ -21,7 +22,7 @@ chaintypes:
   file: ./dist/chaintypes.js
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 1
+    startBlock: 3783563
     mapping:
       file: ./dist/index.js
       handlers:
