@@ -2,25 +2,7 @@ import { Item } from './../types/models/Item'
 import { Balance } from '@polkadot/types/interfaces/runtime'
 import { ensureCollection, ensureItem } from './../helpers/verifyUnique'
 import { SubstrateEvent } from '@subql/types'
-import fetch from 'node-fetch'
-import { Collection, UniquesTransfer } from '../types/models'
-
-const fetchMetadata = async (cid: string, gateways: string[]): Promise<any> => {
-    if (gateways.length === 0) {
-        return null
-    }
-
-    const gateway = gateways[0]
-    const url = `https://${gateway}/ipfs/${cid}`
-
-    try {
-        const res = await fetch(url)
-        return await res.json()
-    } catch (err) {
-        logger.error(err)
-        return fetchMetadata(cid, gateways.slice(1))
-    }
-}
+import { UniquesTransfer } from '../types/models'
 
 export async function handleUniquesTransferEvent(event: SubstrateEvent) {
     logger.debug(
@@ -107,18 +89,6 @@ export const handleUniquesMetadataSetEvent = async (event: SubstrateEvent) => {
     })
 
     item.metadataCid = data.toHuman()!.toString()
-
-    if (item.metadataCid) {
-        const metadata = await fetchMetadata(item.metadataCid, [
-          'pinning.infura-ipfs.io',
-          'nodle-web-wallet.infura-ipfs.io',
-          'cloudflare-ipfs.com'
-        ]);
-
-        if (metadata) {
-            item.payloadCid = metadata.content || metadata.image || ''
-        }
-    }
 
     return item.save()
 }
@@ -239,19 +209,14 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
 
     const timestamp = event.extrinsic!.block.timestamp
     const collectionIdAsNumber = Number(collectionId.toString())
-
-    const id = `${collectionIdAsNumber}-${blockNumber}-${event.idx}`
-
     logger.warn('Creating new collection', collectionIdAsNumber)
-
-    const collection = new Collection(
-        id,
-        collectionIdAsNumber,
-        '',
-        '',
-        '',
-        false
-    )
+    
+    const collection = await ensureCollection({
+        collectionId,
+        blockNumber,
+        idx: event.idx,
+        timestamp: event.extrinsic!.block.timestamp,
+    })
 
     collection.createdAt = BigInt(timestamp.getTime())
     collection.issuer = creator.toString()

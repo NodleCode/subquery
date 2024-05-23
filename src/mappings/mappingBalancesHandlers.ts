@@ -58,6 +58,7 @@ const getEntityByTxType = (event: SubstrateEvent) => {
 
 export async function handleBalancesTransferEvent(event: SubstrateEvent) {
     const [from, to, amount] = event.event.data
+    let receiver: string 
 
     if (!from || !to) {
         logger.error(
@@ -67,12 +68,35 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
         return
     }
 
+    const otherEvents = event.extrinsic?.events?.findIndex(
+        (item) => item.event.method === 'ContractEmitted'
+    )
+
+    let idWithProposal: string
+    if (otherEvents && otherEvents !== -1) {
+        logger.info('ContractEmitted event found')
+        const payloadDataAddress =
+            event.extrinsic?.extrinsic?.args[4]?.toString()
+
+        const hexReceiver = payloadDataAddress?.split('x')?.pop()
+        if (hexReceiver) {
+            logger.info('Receiver address found in payload ' + hexReceiver)
+            const rawReceiver = Buffer.from(hexReceiver, 'hex').toString()
+            logger.info('Receiver address in raw format ' + rawReceiver)
+            receiver = '0x' + rawReceiver.split('x').pop()
+            logger.info('Receiver address in polkadot format ' + receiver)
+        }
+
+        idWithProposal = `${event.block?.block?.header?.number?.toNumber()}-${event.idx}`
+    }
+
     let records = getEntityByTxType(event)
 
     records.forEach(record => {
+        record.id = idWithProposal || `${event.block.block.header.number.toNumber()}-${event.idx}`
         record.blockNumber = event.block.block.header.number.toBigInt()
         record.from = from.toString()
-        record.to = to.toString()
+        record.to = receiver || to.toString()
         record.amount = (amount as Balance).toBigInt()
         if (event.extrinsic) {
             record.txHash = event.extrinsic.extrinsic.hash.toString()
