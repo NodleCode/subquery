@@ -7,17 +7,17 @@ runner:
     version: "*"
     options:
       historical: false
-      unsafe: true
+      skipTransactions: true
   query:
     name: "@subql/query"
     version: "*"
-description: "Subquery indexer for Nodle network."
+description: "Subquery indexer for Nodle network"
 repository: https://github.com/NodleCode/subquery.git
 schema:
   file: ./schema.graphql
 network:
-  chainId: "0xd9d12d9139d020f658d4469fa5c02e331195227da62567d7bf9bbd1abaf77522"
-  endpoint: "https://node-6957502816543653888.lh.onfinality.io/jsonrpc?apikey=09b04494-3139-4b57-a5d1-e1c4c18748ce"
+  chainId: "0x97da7ede98d7bad4e36b4d734b6055425a3be036da2a332ea5a7037656427a21"
+  endpoint: "wss://nodle-parachain.api.onfinality.io/ws?apikey=3d5079b5-564a-4973-af46-336e3f9b63ef"
 chaintypes:
   file: ./dist/chaintypes.js
 dataSources:
@@ -71,4 +71,3 @@ dataSources:
           filter:
             module: uniques
             method: TeamChanged
-            
