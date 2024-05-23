@@ -10,7 +10,6 @@ type Collection @entity {
     createdAt: BigInt @index
     updatedAt: BigInt @index
     items: [Item] @derivedFrom(field: "collection")
-    podId: Float @index
 }
 
 type Item @entity @compositeIndexes(fields: [["owner", "itemId"]]) {
@@ -23,38 +22,6 @@ type Item @entity @compositeIndexes(fields: [["owner", "itemId"]]) {
     createdAt: BigInt @index
     updatedAt: BigInt @index
     owner: String
-    podId: Float @index
-}
-
-type BalanceTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
-    id: ID!
-    from: String! @index
-    to: String! @index
-    txHash: String @index
-    amount: BigInt @index
-    timestamp: BigInt @index
-    blockNumber: BigInt
-}
-
-type Rewards @entity @compositeIndexes(fields: [["from", "to"]]) {
-    id: ID!
-    from: String! @index
-    to: String! @index
-    txHash: String @index
-    amount: BigInt @index
-    timestamp: BigInt @index
-    blockNumber: BigInt
-}
-
-type TransferToTreasury @entity @compositeIndexes(fields: [["from", "to"]]) {
-    id: ID!
-    from: String! @index
-    to: String! @index
-    txHash: String @index
-    amount: BigInt @index
-    timestamp: BigInt @index
-    blockNumber: BigInt
-    isAllocation: Boolean @index
 }
 
 type UniquesTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
@@ -68,37 +35,4 @@ type UniquesTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
     fee: BigInt
     timestamp: BigInt @index
     success: Boolean
-}
-
-type Pot @entity {
-    id: ID!
-    potId: Float! @index
-    owner: String! @index
-    feeQuotaBalance: BigInt!
-    feeQuotaLimit: BigInt!
-    reserveQuotaBalance: BigInt!
-    reserveQuotaLimit: BigInt!
-    sponsorshipType: String!
-    sponsoredAccounts: [AccountPotBalance] @derivedFrom(field: "pot")
-    createdAt: BigInt @index
-    updatedAt: BigInt @index
-}
-
-type AccountPotBalance @entity @compositeIndexes(fields: [["pot", "account"]]) {
-    id: ID!
-    pot: Pot!
-    account: Account!
-    feeQuotaBalance: BigInt!
-    feeQuotaLimit: BigInt!
-    reserveQuotaBalance: BigInt!
-    reserveQuotaLimit: BigInt!
-    createdAt: BigInt @index
-    updatedAt: BigInt @index
-}
-
-type Account @entity {
-    id: ID!
-    potBalance: [AccountPotBalance] @derivedFrom(field: "account")
-    createdAt: BigInt @index
-    updatedAt: BigInt @index
 }
