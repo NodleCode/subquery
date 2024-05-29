@@ -1,6 +1,6 @@
 import { SubstrateEvent } from '@subql/types'
 import { Balance } from '@polkadot/types/interfaces/runtime'
-import { BalanceTransfer, Rewards, TransferToTreasury } from '../types/models'
+import { AllBalanceTransfer, BalanceTransfer, Rewards, TransferToTreasury } from '../types/models'
 
 const REWARD_ACCOUNTS = [
     '4jbtsgNhpGAzdEGrKRb7g8Mq4ToNUpBVxeye942tWfG3gcYi',
@@ -91,6 +91,16 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
     }
 
     let records = getEntityByTxType(event)
+
+    const allBalanceTransfer = new AllBalanceTransfer(
+        `${event.block.block.header.number.toNumber()}-${event.idx}`,
+        '',
+        ''
+    )
+
+    records.push(
+        allBalanceTransfer
+    )
 
     records.forEach(record => {
         record.id = idWithProposal || `${event.block.block.header.number.toNumber()}-${event.idx}`

@@ -26,6 +26,16 @@ type Item @entity @compositeIndexes(fields: [["owner", "itemId"]]) {
     podId: Float @index
 }
 
+type AllBalanceTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
+    id: ID!
+    from: String! @index
+    to: String! @index
+    txHash: String @index
+    amount: BigInt @index
+    timestamp: BigInt @index
+    blockNumber: BigInt
+}
+
 type BalanceTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
     id: ID!
     from: String! @index
