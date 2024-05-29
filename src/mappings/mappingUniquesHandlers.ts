@@ -205,8 +205,8 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
     const collectionId = event.event.data[0]
     const creator = event.event.data[1]
     const owner = event.event.data[2]
-    const blockNumber = event.block.block.header.number.toNumber()
-    const timestamp = event.block.timestamp
+    const blockNumber = event?.block?.block.header.number.toNumber()
+    const timestamp = event?.block.timestamp
 
     const collectionIdAsNumber = Number(collectionId.toString())
     logger.warn('Creating new collection', collectionIdAsNumber)
@@ -215,7 +215,7 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event?.block.timestamp,
     })
 
     collection.createdAt = BigInt(timestamp.getTime())
