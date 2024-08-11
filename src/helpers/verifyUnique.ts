@@ -27,10 +27,10 @@ export const ensureCollection = async ({
         const id = `${collectionIdAsNumber}-${blockNumber}-${idx}`;
         logger.warn('Collection not found, creating new collection', collectionIdAsNumber);
         collection = new Collection(id, collectionIdAsNumber, '', '', '', false);
-        collection.createdAt = BigInt(timestamp.getTime());
+        collection.createdAt = BigInt(timestamp?.getTime() || 0);
     }
 
-    collection.updatedAt = BigInt(timestamp.getTime());
+    collection.updatedAt = BigInt(timestamp?.getTime() || 0);
     return collection;
 }
 
@@ -50,9 +50,9 @@ export const ensureItem = async ({
         const id = `${collectionId}-${itemIdString}-${blockNumber}-${idx}`;
         logger.warn('Item not found, creating new item', itemIdString);
         item = new Item(id, Number(itemIdString), `${collectionId}-${itemIdString}`, collectionFkey, false);
-        item.createdAt = BigInt(timestamp.getTime());
+        item.createdAt = BigInt(timestamp?.getTime() || 0);
     }
     
-    item.updatedAt = BigInt(timestamp.getTime());
+    item.updatedAt = BigInt(timestamp?.getTime() || 0);
     return item;
 }

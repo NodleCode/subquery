@@ -4,6 +4,10 @@ import { ensureCollection, ensureItem } from './../helpers/verifyUnique'
 import { SubstrateEvent } from '@subql/types'
 import { UniquesTransfer } from '../types/models'
 
+const getTimestamp = (event: SubstrateEvent) => {
+    return event.block?.timestamp || event.extrinsic?.block?.timestamp
+}
+
 export async function handleUniquesTransferEvent(event: SubstrateEvent) {
     logger.debug(
         'uniqueTransferEvent added: ' + JSON.stringify(event.toHuman())
@@ -76,7 +80,7 @@ export const handleUniquesMetadataSetEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
 
     const item = await ensureItem({
@@ -85,7 +89,7 @@ export const handleUniquesMetadataSetEvent = async (event: SubstrateEvent) => {
         itemId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
 
     item.metadataCid = data.toHuman()!.toString()
@@ -108,7 +112,7 @@ export const handleUniquesCollectionMetadataSetEvent = async (
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
     collection.metadataCid = data.toHuman()!.toString()
 
@@ -126,7 +130,7 @@ export const handleUniquesDestroyedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
     collection.isDestroyed = true
     return collection.save()
@@ -144,7 +148,7 @@ export const handleUniquesBurnedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
 
     const item = await ensureItem({
@@ -153,7 +157,7 @@ export const handleUniquesBurnedEvent = async (event: SubstrateEvent) => {
         itemId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
 
     item.isBurned = true
@@ -173,11 +177,11 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
 
     const itemIdAsNumber = Number(itemId.toString())
-    const timestamp = event.block.timestamp
+    const timestamp = getTimestamp(event)
     const id = `${collectionId}-${itemIdAsNumber}-${blockNumber}-${event.idx}`
 
     logger.warn('Creating new item', itemIdAsNumber)
@@ -189,8 +193,8 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
         collection.id,
         false
     )
-
-    item.createdAt = BigInt(timestamp.getTime())
+    logger.info('Item created' + JSON.stringify(event))
+    item.createdAt = BigInt(timestamp?.getTime() || 0)
     item.owner = owner.toString()
     item.collectionId = collection.id
 
@@ -206,7 +210,7 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
     const creator = event.event.data[1]
     const owner = event.event.data[2]
     const blockNumber = event?.block?.block.header.number.toNumber()
-    const timestamp = event?.block.timestamp
+    const timestamp = getTimestamp(event)
 
     const collectionIdAsNumber = Number(collectionId.toString())
     logger.warn('Creating new collection', collectionIdAsNumber)
@@ -215,10 +219,10 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event?.block.timestamp,
+        timestamp,
     })
 
-    collection.createdAt = BigInt(timestamp.getTime())
+    collection.createdAt = BigInt(timestamp?.getTime() || 0)
     collection.issuer = creator.toString()
     collection.owner = owner.toString()
     collection.admin = creator.toString()
@@ -245,7 +249,7 @@ export const handleUniquesOwnershipAcceptanceChangedEvent = async (
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
 
     collection.owner = who.toString()
@@ -268,7 +272,7 @@ export const handleUniquesTeamChangedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.block.timestamp,
+        timestamp: getTimestamp(event),
     })
 
     collection.issuer = issuer.toString()
