@@ -26,7 +26,7 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
 
     const uniqueTransfer = new UniquesTransfer(id, '', '')
 
-    uniqueTransfer.block = BigInt(blockNumber)
+    uniqueTransfer.block = blockNumber
     uniqueTransfer.from = from.toString()
     uniqueTransfer.to = to.toString()
     if (event.extrinsic) {
@@ -37,9 +37,7 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
             }
         })
         uniqueTransfer.txHash = event.extrinsic.extrinsic.hash.toString()
-        uniqueTransfer.timestamp = BigInt(
-            event.extrinsic.block.timestamp.getTime()
-        )
+        uniqueTransfer.timestamp = event.extrinsic.block.timestamp.getTime()
 
         const collection = await ensureCollection({
             collectionId,
@@ -180,7 +178,7 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
         timestamp: getTimestamp(event),
     })
 
-    const itemIdAsNumber = Number(itemId.toString())
+    const itemIdAsNumber = itemId.toString()
     const timestamp = getTimestamp(event)
     const id = `${collectionId}-${itemIdAsNumber}-${blockNumber}-${event.idx}`
 
@@ -188,13 +186,13 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
 
     const item = new Item(
         id,
-        Number(itemIdAsNumber),
+        itemIdAsNumber,
         `${collectionId}-${itemIdAsNumber}`,
         collection.id,
         false
     )
     logger.info('Item created' + JSON.stringify(event))
-    item.createdAt = BigInt(timestamp?.getTime() || 0)
+    item.createdAt = timestamp?.getTime() || 0
     item.owner = owner.toString()
     item.collectionId = collection.id
 
@@ -214,7 +212,7 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
 
     const collectionIdAsNumber = Number(collectionId.toString())
     logger.warn('Creating new collection', collectionIdAsNumber)
-    
+
     const collection = await ensureCollection({
         collectionId,
         blockNumber,
@@ -222,7 +220,7 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
         timestamp,
     })
 
-    collection.createdAt = BigInt(timestamp?.getTime() || 0)
+    collection.createdAt = timestamp?.getTime() || 0
     collection.issuer = creator.toString()
     collection.owner = owner.toString()
     collection.admin = creator.toString()

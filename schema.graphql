@@ -1,38 +1,38 @@
 type Collection @entity {
     id: ID!
-    collectionId: Float! @index
+    collectionId: String! @index
     issuer: String! @index
     admin: String! @index
     owner: String! @index
     freezer: String
     metadataCid: String
     isDestroyed: Boolean!
-    createdAt: BigInt @index
-    updatedAt: BigInt @index
+    createdAt: Float @index
+    updatedAt: Float @index
     items: [Item] @derivedFrom(field: "collection")
 }
 
-type Item @entity @compositeIndexes(fields: [["owner", "itemId"]]) {
+type Item @entity {
     id: ID!
-    itemId: Float! @index
+    itemId: String! @index
     collectionItemKey: String! @index
     collection: Collection!
     metadataCid: String
     isBurned: Boolean!
-    createdAt: BigInt @index
-    updatedAt: BigInt @index
+    createdAt: Float @index
+    updatedAt: Float @index
     owner: String
 }
 
-type UniquesTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
+type UniquesTransfer @entity {
     id: ID!
     txHash: String @index
-    block: BigInt @index
+    block: Int @index
     from: String @index
     to: String @index
     collection: Collection!
     item: Item!
     fee: BigInt
-    timestamp: BigInt @index
+    timestamp: Float @index
     success: Boolean
 }
