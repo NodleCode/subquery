@@ -4,3 +4,4 @@ import "@polkadot/api-augment";
 export * from "./mappings/mappingSponsorshipHandlers";
 export * from "./mappings/mappingUniquesHandlers";
 export * from "./mappings/mappingBalancesHandlers";
+export * from "./mappings/mappingVestingBridgeHandlers";
