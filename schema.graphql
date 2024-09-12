@@ -34,6 +34,7 @@ type AllBalanceTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
     amount: BigInt @index
     timestamp: BigInt @index
     blockNumber: BigInt
+    grantsBridged: [GrantBridged] @derivedFrom(field: "balanceTransfer")
 }
 
 type BalanceTransfer @entity @compositeIndexes(fields: [["from", "to"]]) {
@@ -109,6 +110,20 @@ type AccountPotBalance @entity @compositeIndexes(fields: [["pot", "account"]]) {
 type Account @entity {
     id: ID!
     potBalance: [AccountPotBalance] @derivedFrom(field: "account")
+    createdAt: BigInt @index
+    updatedAt: BigInt @index
+}
+
+
+type GrantBridged @entity {
+    id: ID!
+    balanceTransfer: AllBalanceTransfer!
+    belongsTo: String @index
+    bridgeId: BigInt @index
+    start: BigInt @index
+    period: BigInt @index
+    periodCount: BigInt @index
+    perPeriod: BigInt @index
     createdAt: BigInt @index
     updatedAt: BigInt @index
 }
