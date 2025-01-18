@@ -22,15 +22,16 @@ export const ensureCollection = async ({
     const collectionIdAsNumber = Number(collectionId.toString());
     const collections = await Collection.getByCollectionId(collectionIdAsNumber, { limit: 10 });
     let collection = collections?.find((c) => !c.isDestroyed);
+    const inRangeTimestamp = Math.floor(timestamp.getTime() / 1000);
 
     if (!collection) {
         const id = `${collectionIdAsNumber}-${blockNumber}-${idx}`;
         logger.warn('Collection not found, creating new collection', collectionIdAsNumber);
         collection = new Collection(id, collectionIdAsNumber, '', '', '', false);
-        collection.createdAt = BigInt(timestamp.getTime());
+        collection.createdAt = BigInt(inRangeTimestamp);
     }
 
-    collection.updatedAt = BigInt(timestamp.getTime());
+    collection.updatedAt = BigInt(inRangeTimestamp);
     return collection;
 }
 
@@ -47,14 +48,15 @@ export const ensureItem = async ({
       limit: 10
     });
     let item = items?.find((c) => !c.isBurned);
+    const inRangeTimestamp = Math.floor(timestamp.getTime() / 1000);
 
     if (!item) {
         const id = `${collectionId}-${itemIdString}-${blockNumber}-${idx}`;
         logger.warn('Item not found, creating new item', itemIdString);
         item = new Item(id, Number(itemIdString), `${collectionId}-${itemIdString}`, collectionFkey, false);
-        item.createdAt = BigInt(timestamp.getTime());
+        item.createdAt = BigInt(inRangeTimestamp)
     }
     
-    item.updatedAt = BigInt(timestamp.getTime());
+    item.updatedAt = BigInt(inRangeTimestamp);
     return item;
 }

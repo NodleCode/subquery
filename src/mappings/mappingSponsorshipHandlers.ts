@@ -41,8 +41,11 @@ export async function handleSponsorshipCreatePotCall(
         args.sponsorship_type
     )
 
-    pot.createdAt = BigInt(extrinsic.block.timestamp!.getTime())
-    pot.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
+    const inRangeTimestamp = Math.floor(
+        extrinsic.block.timestamp!.getTime() / 1000
+    )
+    pot.createdAt = BigInt(inRangeTimestamp)
+    pot.updatedAt = BigInt(inRangeTimestamp)
 
     return pot.save()
 }
@@ -128,7 +131,11 @@ export async function handleSponsorshipUpdatePotLimitsCall(
 
     pot.feeQuotaLimit = args.new_fee_quota
     pot.reserveQuotaLimit = args.new_reserve_quota
-    pot.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
+
+    const inRangeTimestamp = Math.floor(
+        extrinsic.block.timestamp!.getTime() / 1000
+    )
+    pot.updatedAt = BigInt(inRangeTimestamp)
 
     return pot.save()
 }
@@ -149,7 +156,11 @@ export async function handleSponsorshipUpdateSponsorshipTypeCall(
     if (!pot) return
 
     pot.sponsorshipType = args.sponsorship_type
-    pot.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
+
+    const inRangeTimestamp = Math.floor(
+        extrinsic.block.timestamp!.getTime() / 1000
+    )
+    pot.updatedAt = BigInt(inRangeTimestamp)
 
     return pot.save()
 }
@@ -290,11 +301,13 @@ export async function handleSponsorshipSponsorForCall(
             timestamp,
         })
 
+        const inRangeTimestamp = Math.floor(timestamp.getTime() / 1000)
+
         item.owner = owner.toString()
-        item.updatedAt = BigInt(timestamp.getTime())
+        item.updatedAt = BigInt(inRangeTimestamp)
         item.podId = Number(pot.id)
         collection.podId = Number(pot.id)
-        collection.updatedAt = BigInt(timestamp.getTime())
+        collection.updatedAt = BigInt(inRangeTimestamp)
 
         othersEntities.push(collection.save(), item.save())
     }
@@ -308,6 +321,10 @@ export async function handleSponsorshipSponsorForCall(
 
     const apiPotAsHuman = apiPot.toJSON() as any
 
+    const inRangeTimestamp = Math.floor(
+        extrinsic.block.timestamp!.getTime() / 1000
+    )
+
     if (potBalance && apiUserAsHuman) {
         potBalance.feeQuotaLimit = BigInt(apiUserAsHuman.feeQuota.limit)
         potBalance.feeQuotaBalance = BigInt(apiUserAsHuman.feeQuota.balance)
@@ -315,7 +332,7 @@ export async function handleSponsorshipSponsorForCall(
         potBalance.reserveQuotaBalance = BigInt(
             apiUserAsHuman.reserveQuota.balance
         )
-        potBalance.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
+        potBalance.updatedAt = BigInt(inRangeTimestamp)
     }
 
     if (apiPotAsHuman) {
@@ -324,7 +341,7 @@ export async function handleSponsorshipSponsorForCall(
 
         pot.reserveQuotaLimit = BigInt(apiPotAsHuman.reserveQuota.limit)
         pot.reserveQuotaBalance = BigInt(apiPotAsHuman.reserveQuota.balance)
-        pot.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
+        pot.updatedAt = BigInt(inRangeTimestamp)
     }
 
     return Promise.all([pot.save(), potBalance?.save(), ...othersEntities])

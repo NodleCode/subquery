@@ -102,6 +102,10 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
         allBalanceTransfer
     )
 
+    const inRangeTimestamp = Math.floor(
+        event.extrinsic!.block.timestamp!.getTime() / 1000
+    )
+
     records.forEach(record => {
         record.id = idWithProposal || `${event.block.block.header.number.toNumber()}-${event.idx}`
         record.blockNumber = event.block.block.header.number.toBigInt()
@@ -110,7 +114,7 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
         record.amount = (amount as Balance).toBigInt()
         if (event.extrinsic) {
             record.txHash = event.extrinsic.extrinsic.hash.toString()
-            record.timestamp = BigInt(event.extrinsic.block.timestamp!.getTime())
+            record.timestamp = BigInt(inRangeTimestamp)
         }
     } )
 

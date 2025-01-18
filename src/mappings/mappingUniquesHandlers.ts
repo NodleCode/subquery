@@ -33,9 +33,11 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
             }
         })
         uniqueTransfer.txHash = event.extrinsic.extrinsic.hash.toString()
-        uniqueTransfer.timestamp = BigInt(
-            event.extrinsic.block.timestamp!.getTime()
+        const inRangeTimestamp = Math.floor(
+            event.extrinsic.block.timestamp!.getTime() / 1000
         )
+
+        uniqueTransfer.timestamp = BigInt(inRangeTimestamp)
 
         const collection = await ensureCollection({
             collectionId,
@@ -177,7 +179,9 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
     })
 
     const itemIdAsNumber = Number(itemId.toString())
-    const timestamp = event.extrinsic!.block.timestamp || new Date()
+    const inRangeTimestamp = Math.floor(
+        event.extrinsic!.block.timestamp!.getTime() / 1000
+    )
     const id = `${collectionId}-${itemIdAsNumber}-${blockNumber}-${event.idx}`
 
     logger.warn('Creating new item', itemIdAsNumber)
@@ -190,7 +194,7 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
         false
     )
 
-    item.createdAt = BigInt(timestamp.getTime())
+    item.createdAt = BigInt(inRangeTimestamp)
     item.owner = owner.toString()
     item.collectionId = collection.id
 
@@ -218,7 +222,9 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
         timestamp: timestamp,
     })
 
-    collection.createdAt = BigInt(timestamp.getTime())
+    const inRangeTimestamp = Math.floor(timestamp.getTime() / 1000)
+
+    collection.createdAt = BigInt(inRangeTimestamp)
     collection.issuer = creator.toString()
     collection.owner = owner.toString()
     collection.admin = creator.toString()
