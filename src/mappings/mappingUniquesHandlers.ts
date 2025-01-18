@@ -228,7 +228,7 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
     collection.issuer = creator.toString()
     collection.owner = owner.toString()
     collection.admin = creator.toString()
-
+    logger.warn('Creating new collection with time ' + inRangeTimestamp)
     return collection.save()
 }
 
