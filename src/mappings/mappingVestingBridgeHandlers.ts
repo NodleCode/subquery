@@ -34,7 +34,7 @@ export async function handleBridgeGrants(event: SubstrateEvent) {
     record.amount = (amount as Balance).toBigInt()
     if (event.extrinsic) {
         record.txHash = event.extrinsic.extrinsic.hash.toString()
-        record.timestamp = BigInt(event.extrinsic.block.timestamp.getTime())
+        record.timestamp = BigInt(event.extrinsic.block.timestamp!.getTime())
     }
 
     const parsedGrants = grants as unknown as any[]
@@ -48,8 +48,8 @@ export async function handleBridgeGrants(event: SubstrateEvent) {
             period: grant.period.toBigInt(),
             periodCount: grant.periodCount.toBigInt(),
             perPeriod: grant.perPeriod.toBigInt(),
-            createdAt: BigInt(event.extrinsic!.block.timestamp.getTime()),
-            updatedAt: BigInt(event.extrinsic!.block.timestamp.getTime()),
+            createdAt: BigInt(event.extrinsic!.block.timestamp!.getTime()),
+            updatedAt: BigInt(event.extrinsic!.block.timestamp!.getTime()),
             belongsTo: from,
             bridgeId: (bridgeId as Balance).toBigInt(),
             balanceTransferId: record.id,

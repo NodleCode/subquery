@@ -20,7 +20,7 @@ export const ensureCollection = async ({
   timestamp,
 }: EnsureCollection) => {
     const collectionIdAsNumber = Number(collectionId.toString());
-    const collections = await Collection.getByCollectionId(collectionIdAsNumber);
+    const collections = await Collection.getByCollectionId(collectionIdAsNumber, { limit: 10 });
     let collection = collections?.find((c) => !c.isDestroyed);
 
     if (!collection) {
@@ -43,7 +43,9 @@ export const ensureItem = async ({
   timestamp,
 }: EnsureItem) => {
     const itemIdString = itemId.toString();
-    const items = await Item.getByCollectionItemKey(`${collectionId}-${itemIdString}`);
+    const items = await Item.getByCollectionItemKey(`${collectionId}-${itemIdString}`, {
+      limit: 10
+    });
     let item = items?.find((c) => !c.isBurned);
 
     if (!item) {

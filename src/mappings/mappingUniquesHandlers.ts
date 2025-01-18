@@ -34,14 +34,14 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
         })
         uniqueTransfer.txHash = event.extrinsic.extrinsic.hash.toString()
         uniqueTransfer.timestamp = BigInt(
-            event.extrinsic.block.timestamp.getTime()
+            event.extrinsic.block.timestamp!.getTime()
         )
 
         const collection = await ensureCollection({
             collectionId,
             blockNumber,
             idx: event.idx,
-            timestamp: event.extrinsic.block.timestamp,
+            timestamp: event.extrinsic.block.timestamp!,
         })
 
         const item = await ensureItem({
@@ -50,7 +50,7 @@ export async function handleUniquesTransferEvent(event: SubstrateEvent) {
             itemId,
             blockNumber,
             idx: event.idx,
-            timestamp: event.extrinsic.block.timestamp,
+            timestamp: event.extrinsic.block.timestamp!,
         })
         item.owner = to.toString()
         uniqueTransfer.itemId = item.id
@@ -76,7 +76,7 @@ export const handleUniquesMetadataSetEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
 
     const item = await ensureItem({
@@ -85,7 +85,7 @@ export const handleUniquesMetadataSetEvent = async (event: SubstrateEvent) => {
         itemId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
 
     item.metadataCid = data.toHuman()!.toString()
@@ -108,7 +108,7 @@ export const handleUniquesCollectionMetadataSetEvent = async (
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
     collection.metadataCid = data.toHuman()!.toString()
 
@@ -126,7 +126,7 @@ export const handleUniquesDestroyedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
     collection.isDestroyed = true
     return collection.save()
@@ -144,7 +144,7 @@ export const handleUniquesBurnedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
 
     const item = await ensureItem({
@@ -153,7 +153,7 @@ export const handleUniquesBurnedEvent = async (event: SubstrateEvent) => {
         itemId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
 
     item.isBurned = true
@@ -173,11 +173,11 @@ export const handleUniquesIssuedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
 
     const itemIdAsNumber = Number(itemId.toString())
-    const timestamp = event.extrinsic!.block.timestamp
+    const timestamp = event.extrinsic!.block.timestamp || new Date()
     const id = `${collectionId}-${itemIdAsNumber}-${blockNumber}-${event.idx}`
 
     logger.warn('Creating new item', itemIdAsNumber)
@@ -207,7 +207,7 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
     const owner = event.event.data[2]
     const blockNumber = event.block.block.header.number.toNumber()
 
-    const timestamp = event.extrinsic!.block.timestamp
+    const timestamp = event.extrinsic!.block.timestamp || new Date()
     const collectionIdAsNumber = Number(collectionId.toString())
     logger.warn('Creating new collection', collectionIdAsNumber)
     
@@ -215,7 +215,7 @@ export const handleUniquesCreatedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: timestamp,
     })
 
     collection.createdAt = BigInt(timestamp.getTime())
@@ -245,7 +245,7 @@ export const handleUniquesOwnershipAcceptanceChangedEvent = async (
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
 
     collection.owner = who.toString()
@@ -268,7 +268,7 @@ export const handleUniquesTeamChangedEvent = async (event: SubstrateEvent) => {
         collectionId,
         blockNumber,
         idx: event.idx,
-        timestamp: event.extrinsic!.block.timestamp,
+        timestamp: event.extrinsic!.block.timestamp || new Date(),
     })
 
     collection.issuer = issuer.toString()

@@ -41,8 +41,8 @@ export async function handleSponsorshipCreatePotCall(
         args.sponsorship_type
     )
 
-    pot.createdAt = BigInt(extrinsic.block.timestamp.getTime())
-    pot.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
+    pot.createdAt = BigInt(extrinsic.block.timestamp!.getTime())
+    pot.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
 
     return pot.save()
 }
@@ -128,7 +128,7 @@ export async function handleSponsorshipUpdatePotLimitsCall(
 
     pot.feeQuotaLimit = args.new_fee_quota
     pot.reserveQuotaLimit = args.new_reserve_quota
-    pot.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
+    pot.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
 
     return pot.save()
 }
@@ -149,7 +149,7 @@ export async function handleSponsorshipUpdateSponsorshipTypeCall(
     if (!pot) return
 
     pot.sponsorshipType = args.sponsorship_type
-    pot.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
+    pot.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
 
     return pot.save()
 }
@@ -202,6 +202,27 @@ export async function handleSponsorshipUpdateUsersLimitsCall(
     )
 }
 
+const getByPotId = async (
+    potId: string,
+    limit: number,
+    previous: any[]
+): Promise<AccountPotBalance[]> => {
+    const potBalances = await store.getByField<AccountPotBalance>(
+        'AccountPotBalance',
+        'potId',
+        potId,
+        {
+            limit,
+        }
+    )
+
+    const result = [...previous, ...potBalances]
+
+    if (potBalances.length < limit) return result
+
+    return getByPotId(potId, limit, result)
+}
+
 export async function handleSponsorshipRemovePotCall(
     extrinsic: SubstrateExtrinsic
 ) {
@@ -214,11 +235,11 @@ export async function handleSponsorshipRemovePotCall(
 
     // remove AccountPotBalance with potId = args.pot
 
+    const potBalances = await getByPotId(args.pot, 100, [])
+
     await store.bulkRemove(
         `AccountPotBalance`,
-        (
-            await store.getByField(`AccountPotBalance`, 'potId', args.pot)
-        ).map((item) => item.id)
+        potBalances.map((item) => item.id)
     )
 
     return store.remove(`Pot`, args.pot)
@@ -251,7 +272,7 @@ export async function handleSponsorshipSponsorForCall(
         const [collectionId, itemId, owner] = call.args
         const idx = extrinsic.idx
         const blockNumber = extrinsic.block.block.header.number.toNumber()
-        const timestamp = extrinsic.block.timestamp
+        const timestamp = extrinsic.block.timestamp || new Date()
 
         const collection = await ensureCollection({
             collectionId,
@@ -294,7 +315,7 @@ export async function handleSponsorshipSponsorForCall(
         potBalance.reserveQuotaBalance = BigInt(
             apiUserAsHuman.reserveQuota.balance
         )
-        potBalance.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
+        potBalance.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
     }
 
     if (apiPotAsHuman) {
@@ -303,7 +324,7 @@ export async function handleSponsorshipSponsorForCall(
 
         pot.reserveQuotaLimit = BigInt(apiPotAsHuman.reserveQuota.limit)
         pot.reserveQuotaBalance = BigInt(apiPotAsHuman.reserveQuota.balance)
-        pot.updatedAt = BigInt(extrinsic.block.timestamp.getTime())
+        pot.updatedAt = BigInt(extrinsic.block.timestamp!.getTime())
     }
 
     return Promise.all([pot.save(), potBalance?.save(), ...othersEntities])
