@@ -1,6 +1,10 @@
 import { SubstrateEvent } from '@subql/types'
 import { Balance } from '@polkadot/types/interfaces/runtime'
-import { AllBalanceTransfer, BalanceTransfer, Rewards, TransferToTreasury } from '../types/models'
+import {
+    BalanceTransfer,
+    Rewards,
+    TransferToTreasury,
+} from '../types/models'
 
 const REWARD_ACCOUNTS = [
     '4jbtsgNhpGAzdEGrKRb7g8Mq4ToNUpBVxeye942tWfG3gcYi',
@@ -16,21 +20,28 @@ const TREASURY_ACCOUNT = [
     '4jbtsgNhpGB2voF5dZzKQ2tphWLjV48HSkfQwmWqNn3qa4rv',
     '4jbtsgNhpGB2voKv8rRSJYTAohbnHE5oVZ4DejZBEQVT5o86',
     '4jbtsgNhpGB2NtbdLN3xkB2urHo5JboKkSAjcBM4s3SzQdUt',
-    '4jbtsgNhpGAzdEGrKRb7g8Mq4ToNUpBVxeye942tWfG3gcYi'
+    '4jbtsgNhpGAzdEGrKRb7g8Mq4ToNUpBVxeye942tWfG3gcYi',
+]
+
+const BRIDGE_ACCOUNTS = [
+    '4iQSfQxyKEBMomxnBAf25VrSjWt9q6WHySGCGFewbWSeYTk5',
+    '4iutuE9GLdQTqvo7t75odmxf2F8kKaUSR1PWVDhQECetJR7i',
 ]
 
 const getEntityByTxType = (event: SubstrateEvent) => {
     const [from, to, _] = event.event.data
     const isReward = REWARD_ACCOUNTS.includes(from.toString())
-    const isTreasury = TREASURY_ACCOUNT.includes(to.toString())
+    const isTreasury = false // TREASURY_ACCOUNT.includes(to.toString())
     const result = []
 
     if (isReward) {
-        result.push(new Rewards(
-            `${event.block.block.header.number.toNumber()}-${event.idx}`,
-            '',
-            ''
-        ))
+        result.push(
+            new Rewards(
+                `${event.block.block.header.number.toNumber()}-${event.idx}`,
+                '',
+                ''
+            )
+        )
     }
 
     if (isTreasury) {
@@ -46,11 +57,13 @@ const getEntityByTxType = (event: SubstrateEvent) => {
     }
 
     if (!isReward && !isTreasury) {
-        result.push(new BalanceTransfer(
-            `${event.block.block.header.number.toNumber()}-${event.idx}`,
-            '',
-            ''
-        ))
+        result.push(
+            new BalanceTransfer(
+                `${event.block.block.header.number.toNumber()}-${event.idx}`,
+                '',
+                ''
+            )
+        )
     }
 
     return result
@@ -58,7 +71,7 @@ const getEntityByTxType = (event: SubstrateEvent) => {
 
 export async function handleBalancesTransferEvent(event: SubstrateEvent) {
     const [from, to, amount] = event.event.data
-    let receiver: string 
+    let receiver: string
 
     if (!from || !to) {
         logger.error(
@@ -71,6 +84,8 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
     const otherEvents = event.extrinsic?.events?.findIndex(
         (item) => item.event.method === 'ContractEmitted'
     )
+
+    let records = getEntityByTxType(event)
 
     let idWithProposal: string
     if (otherEvents && otherEvents !== -1) {
@@ -87,27 +102,19 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
             logger.info('Receiver address in polkadot format ' + receiver)
         }
 
-        idWithProposal = `${event.block?.block?.header?.number?.toNumber()}-${event.idx}`
+        idWithProposal = `${event.block?.block?.header?.number?.toNumber()}-${
+            event.idx
+        }`
     }
-
-    let records = getEntityByTxType(event)
-
-    const allBalanceTransfer = new AllBalanceTransfer(
-        `${event.block.block.header.number.toNumber()}-${event.idx}`,
-        '',
-        ''
-    )
-
-    records.push(
-        allBalanceTransfer
-    )
 
     const inRangeTimestamp = Math.floor(
         event.extrinsic!.block.timestamp!.getTime() / 1000
     )
 
-    records.forEach(record => {
-        record.id = idWithProposal || `${event.block.block.header.number.toNumber()}-${event.idx}`
+    records.forEach((record) => {
+        record.id =
+            idWithProposal ||
+            `${event.block.block.header.number.toNumber()}-${event.idx}`
         record.blockNumber = event.block.block.header.number.toBigInt()
         record.from = from.toString()
         record.to = receiver || to.toString()
@@ -116,7 +123,7 @@ export async function handleBalancesTransferEvent(event: SubstrateEvent) {
             record.txHash = event.extrinsic.extrinsic.hash.toString()
             record.timestamp = BigInt(inRangeTimestamp)
         }
-    } )
+    })
 
-    return Promise.all(records.map(record => record.save()))
+    return Promise.all(records.map((record) => record.save()))
 }
